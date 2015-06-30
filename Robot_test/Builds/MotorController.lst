@@ -1,0 +1,1528 @@
+   1               		.file	"MotorController.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 119               	.global	motor_init
+ 121               	motor_init:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** /*
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****  * MotorController.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****  *
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****  * Created: 05-03-2015 12:23:13
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****  *  Author: T
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****  */
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <avr/io.h>
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <avr/interrupt.h>
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <stdlib.h>
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <stdio.h>
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <string.h>
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <stdint.h>
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <math.h>
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <stdbool.h>
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <float.h>
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <util/delay.h>
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include "lineStateMachine.h"
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include <util/delay.h>
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #include "UART.h"
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //#define F_CPU 16000000UL
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #define INTERVAL_ADJUST_SPEED 10 // In ms
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #define PWM_FACTOR 7
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #define K_P 3
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** #define K_I 1
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void uart_puts(char *s);
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int stopFlag = 0;
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** unsigned int encoderValueRight = 0;
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** unsigned int encoderValueLeft = 0;
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile bool adjustSpeed = false;
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile uint16_t time1ms = 0;
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int IValue;
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int errorDiffRight;
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int errorDiffLeft;
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int backwardsLeft = 0;
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int backwardsRight = 0;
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int forwardsLeft = 0;
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int forwardsRight = 0;
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  49:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int speedReference = 20*PWM_FACTOR; // 1 RPS = 1032. Max 8 RPS. Measured max 70 per 10 mS
+  50:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** int pwmMax = 511;
+  51:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int outLeftSide;
+  52:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int outRightSide;
+  53:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  54:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int turn90degreesLeft;
+  55:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** volatile int turn90degreesRight;
+  56:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //int firstStop = 0;
+  57:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  58:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void motor_init(void)
+  59:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 123               	.LM0:
+ 124               	.LFBB1:
+ 125               	/* prologue: function */
+ 126               	/* frame size = 0 */
+ 127               	/* stack size = 0 */
+ 128               	.L__stack_usage = 0
+  60:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Encoder motor left A and B
+  61:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     DDRE &= ~(1<<DDE6) & ~(1<<DDE7);
+ 130               	.LM1:
+ 131 0000 8DB1      		in r24,0xd
+ 132 0002 8F73      		andi r24,lo8(63)
+ 133 0004 8DB9      		out 0xd,r24
+  62:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  63:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Encoder motor right A and B
+  64:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     DDRE  &= ~(1<<DDE4) & ~(1<<DDE5);
+ 135               	.LM2:
+ 136 0006 8DB1      		in r24,0xd
+ 137 0008 8F7C      		andi r24,lo8(-49)
+ 138 000a 8DB9      		out 0xd,r24
+  65:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  66:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     cli(); // disable global interrupts
+ 140               	.LM3:
+ 141               	/* #APP */
+ 142               	 ;  66 "/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c" 1
+ 143 000c F894      		cli
+ 144               	 ;  0 "" 2
+  67:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  68:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     EIFR |= (1<<INT7)|(1<<INT6)|(1<<INT5)|(1<<INT4);
+ 146               	.LM4:
+ 147               	/* #NOAPP */
+ 148 000e 8CB3      		in r24,0x1c
+ 149 0010 806F      		ori r24,lo8(-16)
+ 150 0012 8CBB      		out 0x1c,r24
+  69:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     EIMSK |= (1<<INT7)|(1<<INT6)|(1<<INT5)|(1<<INT4);
+ 152               	.LM5:
+ 153 0014 8DB3      		in r24,0x1d
+ 154 0016 806F      		ori r24,lo8(-16)
+ 155 0018 8DBB      		out 0x1d,r24
+  70:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     EICRB |= (1<<ISC70)|(1<<ISC60)|(1<<ISC50)|(1<<ISC40);
+ 157               	.LM6:
+ 158 001a EAE6      		ldi r30,lo8(106)
+ 159 001c F0E0      		ldi r31,0
+ 160 001e 8081      		ld r24,Z
+ 161 0020 8565      		ori r24,lo8(85)
+ 162 0022 8083      		st Z,r24
+  71:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    EICRB |= (1<<ISC71)|(1<<ISC61)|(1<<ISC51)|(1<<ISC41);
+  72:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  73:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  74:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     sei(); //Enable global interrupts. SREG = (1<<I);
+ 164               	.LM7:
+ 165               	/* #APP */
+ 166               	 ;  74 "/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c" 1
+ 167 0024 7894      		sei
+ 168               	 ;  0 "" 2
+  75:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  76:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Motor input
+  77:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     DDRC |= (1<<DDC0)|(1<<DDC1)|(1<<DDC2)|(1<<DDC3); // Outputs
+ 170               	.LM8:
+ 171               	/* #NOAPP */
+ 172 0026 87B1      		in r24,0x7
+ 173 0028 8F60      		ori r24,lo8(15)
+ 174 002a 87B9      		out 0x7,r24
+  78:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  79:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC0);   // High. Forward motor Left
+ 176               	.LM9:
+ 177 002c 409A      		sbi 0x8,0
+  80:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC1);  // Low Forward motor Left
+ 179               	.LM10:
+ 180 002e 4198      		cbi 0x8,1
+  81:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  82:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC3);   // High. Forward motor Right
+ 182               	.LM11:
+ 183 0030 439A      		sbi 0x8,3
+  83:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC2);  // Low Forward motor Right
+ 185               	.LM12:
+ 186 0032 4298      		cbi 0x8,2
+ 187 0034 0895      		ret
+ 189               	.Lscope1:
+ 191               	.global	motor_timer_init
+ 193               	motor_timer_init:
+  84:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+  85:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+  86:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void motor_timer_init(void)
+  87:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 195               	.LM13:
+ 196               	.LFBB2:
+ 197               	/* prologue: function */
+ 198               	/* frame size = 0 */
+ 199               	/* stack size = 0 */
+ 200               	.L__stack_usage = 0
+  88:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Timer 0 // adjust timer
+  89:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     TCCR0A = (1<<WGM01);
+ 202               	.LM14:
+ 203 0036 82E0      		ldi r24,lo8(2)
+ 204 0038 84BD      		out 0x24,r24
+  90:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     TCCR0B = (1<<CS02); // prescaler 256
+ 206               	.LM15:
+ 207 003a 94E0      		ldi r25,lo8(4)
+ 208 003c 95BD      		out 0x25,r25
+  91:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     OCR0A = 71;
+ 210               	.LM16:
+ 211 003e 97E4      		ldi r25,lo8(71)
+ 212 0040 97BD      		out 0x27,r25
+  92:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     TIMSK0 = (1<<OCIE0A);
+ 214               	.LM17:
+ 215 0042 8093 6E00 		sts 110,r24
+  93:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+  94:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Timer 1 // PWM
+  95:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     TCCR1A = (1<<COM1A1)|(1<<COM1B1)|(0<<WGM10)|(1<<WGM11);
+ 217               	.LM18:
+ 218 0046 82EA      		ldi r24,lo8(-94)
+ 219 0048 8093 8000 		sts 128,r24
+  96:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     TCCR1B = (1<<CS10)|(0<<WGM12);
+ 221               	.LM19:
+ 222 004c 81E0      		ldi r24,lo8(1)
+ 223 004e 8093 8100 		sts 129,r24
+  97:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //ICR1 = 511;
+  98:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     OCR1B = 1;
+ 225               	.LM20:
+ 226 0052 81E0      		ldi r24,lo8(1)
+ 227 0054 90E0      		ldi r25,0
+ 228 0056 9093 8B00 		sts 138+1,r25
+ 229 005a 8093 8A00 		sts 138,r24
+  99:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     OCR1A = 1;
+ 231               	.LM21:
+ 232 005e 9093 8900 		sts 136+1,r25
+ 233 0062 8093 8800 		sts 136,r24
+ 100:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 101:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // PWM
+ 102:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     DDRB |= (1<<DDB5)|(1<<DDB6);    // Output PWM
+ 235               	.LM22:
+ 236 0066 84B1      		in r24,0x4
+ 237 0068 8066      		ori r24,lo8(96)
+ 238 006a 84B9      		out 0x4,r24
+ 239 006c 0895      		ret
+ 241               	.Lscope2:
+ 243               	.global	__vector_5
+ 245               	__vector_5:
+ 103:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 104:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 105:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 106:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** ISR(INT4_vect)
+ 107:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 247               	.LM23:
+ 248               	.LFBB3:
+ 249 006e 1F92      		push r1
+ 250 0070 0F92      		push r0
+ 251 0072 0FB6      		in r0,__SREG__
+ 252 0074 0F92      		push r0
+ 253 0076 1124      		clr __zero_reg__
+ 254 0078 8F93      		push r24
+ 255 007a 9F93      		push r25
+ 256               	/* prologue: Signal */
+ 257               	/* frame size = 0 */
+ 258               	/* stack size = 5 */
+ 259               	.L__stack_usage = 5
+ 108:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueRight++;
+ 261               	.LM24:
+ 262 007c 8091 0000 		lds r24,encoderValueRight
+ 263 0080 9091 0000 		lds r25,encoderValueRight+1
+ 264 0084 0196      		adiw r24,1
+ 265 0086 9093 0000 		sts encoderValueRight+1,r25
+ 266 008a 8093 0000 		sts encoderValueRight,r24
+ 109:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 110:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (PINE & (1<<PE4)) {
+ 268               	.LM25:
+ 269 008e 649B      		sbis 0xc,4
+ 270 0090 00C0      		rjmp .L3
+ 111:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 112:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (!(PINE & (1<<PE5))) {
+ 272               	.LM26:
+ 273 0092 6599      		sbic 0xc,5
+ 274 0094 00C0      		rjmp .L5
+ 113:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsRight = 1;
+ 276               	.LM27:
+ 277 0096 81E0      		ldi r24,lo8(1)
+ 278 0098 90E0      		ldi r25,0
+ 279 009a 9093 0000 		sts forwardsRight+1,r25
+ 280 009e 8093 0000 		sts forwardsRight,r24
+ 281 00a2 00C0      		rjmp .L3
+ 282               	.L5:
+ 114:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         } else {
+ 115:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsRight = 0;
+ 284               	.LM28:
+ 285 00a4 1092 0000 		sts forwardsRight+1,__zero_reg__
+ 286 00a8 1092 0000 		sts forwardsRight,__zero_reg__
+ 287               	.L3:
+ 288               	/* epilogue start */
+ 116:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 117:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 118:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 119:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 120:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 290               	.LM29:
+ 291 00ac 9F91      		pop r25
+ 292 00ae 8F91      		pop r24
+ 293 00b0 0F90      		pop r0
+ 294 00b2 0FBE      		out __SREG__,r0
+ 295 00b4 0F90      		pop r0
+ 296 00b6 1F90      		pop r1
+ 297 00b8 1895      		reti
+ 299               	.Lscope3:
+ 301               	.global	__vector_6
+ 303               	__vector_6:
+ 121:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 122:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** ISR(INT5_vect)
+ 123:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 305               	.LM30:
+ 306               	.LFBB4:
+ 307 00ba 1F92      		push r1
+ 308 00bc 0F92      		push r0
+ 309 00be 0FB6      		in r0,__SREG__
+ 310 00c0 0F92      		push r0
+ 311 00c2 1124      		clr __zero_reg__
+ 312 00c4 8F93      		push r24
+ 313 00c6 9F93      		push r25
+ 314               	/* prologue: Signal */
+ 315               	/* frame size = 0 */
+ 316               	/* stack size = 5 */
+ 317               	.L__stack_usage = 5
+ 124:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueRight++;
+ 319               	.LM31:
+ 320 00c8 8091 0000 		lds r24,encoderValueRight
+ 321 00cc 9091 0000 		lds r25,encoderValueRight+1
+ 322 00d0 0196      		adiw r24,1
+ 323 00d2 9093 0000 		sts encoderValueRight+1,r25
+ 324 00d6 8093 0000 		sts encoderValueRight,r24
+ 125:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 126:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (PINE & (1<<PE5)) {
+ 326               	.LM32:
+ 327 00da 659B      		sbis 0xc,5
+ 328 00dc 00C0      		rjmp .L10
+ 127:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 128:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (!(PINE & (1<<PE4))) {
+ 330               	.LM33:
+ 331 00de 6499      		sbic 0xc,4
+ 332 00e0 00C0      		rjmp .L12
+ 129:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsRight = 0;
+ 334               	.LM34:
+ 335 00e2 1092 0000 		sts forwardsRight+1,__zero_reg__
+ 336 00e6 1092 0000 		sts forwardsRight,__zero_reg__
+ 337 00ea 00C0      		rjmp .L10
+ 338               	.L12:
+ 130:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         } else {
+ 131:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsRight = 1;
+ 340               	.LM35:
+ 341 00ec 81E0      		ldi r24,lo8(1)
+ 342 00ee 90E0      		ldi r25,0
+ 343 00f0 9093 0000 		sts forwardsRight+1,r25
+ 344 00f4 8093 0000 		sts forwardsRight,r24
+ 345               	.L10:
+ 346               	/* epilogue start */
+ 132:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 133:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 134:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 348               	.LM36:
+ 349 00f8 9F91      		pop r25
+ 350 00fa 8F91      		pop r24
+ 351 00fc 0F90      		pop r0
+ 352 00fe 0FBE      		out __SREG__,r0
+ 353 0100 0F90      		pop r0
+ 354 0102 1F90      		pop r1
+ 355 0104 1895      		reti
+ 357               	.Lscope4:
+ 359               	.global	__vector_7
+ 361               	__vector_7:
+ 135:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 136:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** ISR(INT6_vect)
+ 137:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 363               	.LM37:
+ 364               	.LFBB5:
+ 365 0106 1F92      		push r1
+ 366 0108 0F92      		push r0
+ 367 010a 0FB6      		in r0,__SREG__
+ 368 010c 0F92      		push r0
+ 369 010e 1124      		clr __zero_reg__
+ 370 0110 8F93      		push r24
+ 371 0112 9F93      		push r25
+ 372               	/* prologue: Signal */
+ 373               	/* frame size = 0 */
+ 374               	/* stack size = 5 */
+ 375               	.L__stack_usage = 5
+ 138:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueLeft++;
+ 377               	.LM38:
+ 378 0114 8091 0000 		lds r24,encoderValueLeft
+ 379 0118 9091 0000 		lds r25,encoderValueLeft+1
+ 380 011c 0196      		adiw r24,1
+ 381 011e 9093 0000 		sts encoderValueLeft+1,r25
+ 382 0122 8093 0000 		sts encoderValueLeft,r24
+ 139:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 140:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 141:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (PINE & (1<<PE6))
+ 384               	.LM39:
+ 385 0126 669B      		sbis 0xc,6
+ 386 0128 00C0      		rjmp .L16
+ 142:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 143:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 144:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (!(PINE & (1<<PE7)))
+ 388               	.LM40:
+ 389 012a 6799      		sbic 0xc,7
+ 390 012c 00C0      		rjmp .L18
+ 145:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         {
+ 146:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsLeft = 0;
+ 392               	.LM41:
+ 393 012e 1092 0000 		sts forwardsLeft+1,__zero_reg__
+ 394 0132 1092 0000 		sts forwardsLeft,__zero_reg__
+ 395 0136 00C0      		rjmp .L16
+ 396               	.L18:
+ 147:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 148:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         else
+ 149:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         {
+ 150:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsLeft = 1;
+ 398               	.LM42:
+ 399 0138 81E0      		ldi r24,lo8(1)
+ 400 013a 90E0      		ldi r25,0
+ 401 013c 9093 0000 		sts forwardsLeft+1,r25
+ 402 0140 8093 0000 		sts forwardsLeft,r24
+ 403               	.L16:
+ 404               	/* epilogue start */
+ 151:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 152:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 153:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 154:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 406               	.LM43:
+ 407 0144 9F91      		pop r25
+ 408 0146 8F91      		pop r24
+ 409 0148 0F90      		pop r0
+ 410 014a 0FBE      		out __SREG__,r0
+ 411 014c 0F90      		pop r0
+ 412 014e 1F90      		pop r1
+ 413 0150 1895      		reti
+ 415               	.Lscope5:
+ 417               	.global	__vector_8
+ 419               	__vector_8:
+ 155:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 156:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** ISR(INT7_vect)
+ 157:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 421               	.LM44:
+ 422               	.LFBB6:
+ 423 0152 1F92      		push r1
+ 424 0154 0F92      		push r0
+ 425 0156 0FB6      		in r0,__SREG__
+ 426 0158 0F92      		push r0
+ 427 015a 1124      		clr __zero_reg__
+ 428 015c 8F93      		push r24
+ 429 015e 9F93      		push r25
+ 430               	/* prologue: Signal */
+ 431               	/* frame size = 0 */
+ 432               	/* stack size = 5 */
+ 433               	.L__stack_usage = 5
+ 158:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueLeft++;
+ 435               	.LM45:
+ 436 0160 8091 0000 		lds r24,encoderValueLeft
+ 437 0164 9091 0000 		lds r25,encoderValueLeft+1
+ 438 0168 0196      		adiw r24,1
+ 439 016a 9093 0000 		sts encoderValueLeft+1,r25
+ 440 016e 8093 0000 		sts encoderValueLeft,r24
+ 159:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 160:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (PINE & (1<<PE7)) {
+ 442               	.LM46:
+ 443 0172 679B      		sbis 0xc,7
+ 444 0174 00C0      		rjmp .L22
+ 161:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 162:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (!(PINE & (1<<PE6))) {
+ 446               	.LM47:
+ 447 0176 6699      		sbic 0xc,6
+ 448 0178 00C0      		rjmp .L24
+ 163:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsLeft = 1;
+ 450               	.LM48:
+ 451 017a 81E0      		ldi r24,lo8(1)
+ 452 017c 90E0      		ldi r25,0
+ 453 017e 9093 0000 		sts forwardsLeft+1,r25
+ 454 0182 8093 0000 		sts forwardsLeft,r24
+ 455 0186 00C0      		rjmp .L22
+ 456               	.L24:
+ 164:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         } else {
+ 165:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             forwardsLeft = 0;
+ 458               	.LM49:
+ 459 0188 1092 0000 		sts forwardsLeft+1,__zero_reg__
+ 460 018c 1092 0000 		sts forwardsLeft,__zero_reg__
+ 461               	.L22:
+ 462               	/* epilogue start */
+ 166:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 167:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 168:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 169:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 170:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 464               	.LM50:
+ 465 0190 9F91      		pop r25
+ 466 0192 8F91      		pop r24
+ 467 0194 0F90      		pop r0
+ 468 0196 0FBE      		out __SREG__,r0
+ 469 0198 0F90      		pop r0
+ 470 019a 1F90      		pop r1
+ 471 019c 1895      		reti
+ 473               	.Lscope6:
+ 475               	.global	__vector_21
+ 477               	__vector_21:
+ 171:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 172:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 173:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 174:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** ISR(TIMER0_COMPA_vect) // Comes every 1ms
+ 175:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 479               	.LM51:
+ 480               	.LFBB7:
+ 481 019e 1F92      		push r1
+ 482 01a0 0F92      		push r0
+ 483 01a2 0FB6      		in r0,__SREG__
+ 484 01a4 0F92      		push r0
+ 485 01a6 1124      		clr __zero_reg__
+ 486 01a8 8F93      		push r24
+ 487 01aa 9F93      		push r25
+ 488               	/* prologue: Signal */
+ 489               	/* frame size = 0 */
+ 490               	/* stack size = 5 */
+ 491               	.L__stack_usage = 5
+ 176:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     volatile static uint16_t count10ms = INTERVAL_ADJUST_SPEED;
+ 177:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     time1ms++;
+ 493               	.LM52:
+ 494 01ac 8091 0000 		lds r24,time1ms
+ 495 01b0 9091 0000 		lds r25,time1ms+1
+ 496 01b4 0196      		adiw r24,1
+ 497 01b6 9093 0000 		sts time1ms+1,r25
+ 498 01ba 8093 0000 		sts time1ms,r24
+ 178:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 179:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if ((--count10ms) == 0)  // Do if 1 minus count10ms = 0
+ 500               	.LM53:
+ 501 01be 8091 0000 		lds r24,count10ms.2084
+ 502 01c2 9091 0000 		lds r25,count10ms.2084+1
+ 503 01c6 0197      		sbiw r24,1
+ 504 01c8 9093 0000 		sts count10ms.2084+1,r25
+ 505 01cc 8093 0000 		sts count10ms.2084,r24
+ 506 01d0 892B      		or r24,r25
+ 507 01d2 01F4      		brne .L25
+ 180:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 181:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 182:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         count10ms = INTERVAL_ADJUST_SPEED; //
+ 509               	.LM54:
+ 510 01d4 8AE0      		ldi r24,lo8(10)
+ 511 01d6 90E0      		ldi r25,0
+ 512 01d8 9093 0000 		sts count10ms.2084+1,r25
+ 513 01dc 8093 0000 		sts count10ms.2084,r24
+ 183:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         adjustSpeed = true;      // Set adjustSpeed to 1. Activating this function to be run next t
+ 515               	.LM55:
+ 516 01e0 81E0      		ldi r24,lo8(1)
+ 517 01e2 8093 0000 		sts adjustSpeed,r24
+ 518               	.L25:
+ 519               	/* epilogue start */
+ 184:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 185:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 521               	.LM56:
+ 522 01e6 9F91      		pop r25
+ 523 01e8 8F91      		pop r24
+ 524 01ea 0F90      		pop r0
+ 525 01ec 0FBE      		out __SREG__,r0
+ 526 01ee 0F90      		pop r0
+ 527 01f0 1F90      		pop r1
+ 528 01f2 1895      		reti
+ 533               	.Lscope7:
+ 535               	.global	forwardMotorLeft
+ 537               	forwardMotorLeft:
+ 186:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 187:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 188:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void forwardMotorLeft(void)
+ 189:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 539               	.LM57:
+ 540               	.LFBB8:
+ 541               	/* prologue: function */
+ 542               	/* frame size = 0 */
+ 543               	/* stack size = 0 */
+ 544               	.L__stack_usage = 0
+ 190:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC3); // High. Forward motor left
+ 546               	.LM58:
+ 547 01f4 439A      		sbi 0x8,3
+ 191:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC2); // Low Forward motor left
+ 549               	.LM59:
+ 550 01f6 4298      		cbi 0x8,2
+ 551 01f8 0895      		ret
+ 553               	.Lscope8:
+ 555               	.global	forwardMotorRight
+ 557               	forwardMotorRight:
+ 192:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 193:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 194:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void forwardMotorRight(void)
+ 195:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 559               	.LM60:
+ 560               	.LFBB9:
+ 561               	/* prologue: function */
+ 562               	/* frame size = 0 */
+ 563               	/* stack size = 0 */
+ 564               	.L__stack_usage = 0
+ 196:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC0); // High. Forward motor right
+ 566               	.LM61:
+ 567 01fa 409A      		sbi 0x8,0
+ 197:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC1); // Low Forward motor right
+ 569               	.LM62:
+ 570 01fc 4198      		cbi 0x8,1
+ 571 01fe 0895      		ret
+ 573               	.Lscope9:
+ 575               	.global	backwardsMotorLeft
+ 577               	backwardsMotorLeft:
+ 198:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 199:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 200:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void backwardsMotorLeft(void)
+ 201:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 579               	.LM63:
+ 580               	.LFBB10:
+ 581               	/* prologue: function */
+ 582               	/* frame size = 0 */
+ 583               	/* stack size = 0 */
+ 584               	.L__stack_usage = 0
+ 202:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC2); // High backwards motor left
+ 586               	.LM64:
+ 587 0200 429A      		sbi 0x8,2
+ 203:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC3); // Low backwards motor left
+ 589               	.LM65:
+ 590 0202 4398      		cbi 0x8,3
+ 591 0204 0895      		ret
+ 593               	.Lscope10:
+ 595               	.global	backwardsMotorRight
+ 597               	backwardsMotorRight:
+ 204:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 205:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 206:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void backwardsMotorRight(void)
+ 207:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 599               	.LM66:
+ 600               	.LFBB11:
+ 601               	/* prologue: function */
+ 602               	/* frame size = 0 */
+ 603               	/* stack size = 0 */
+ 604               	.L__stack_usage = 0
+ 208:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC |= (1<<PORTC1); // High backwards motor right
+ 606               	.LM67:
+ 607 0206 419A      		sbi 0x8,1
+ 209:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     PORTC &= ~(1<<PORTC0); // Low backwards motor right
+ 609               	.LM68:
+ 610 0208 4098      		cbi 0x8,0
+ 611 020a 0895      		ret
+ 613               	.Lscope11:
+ 617               	.global	drive
+ 619               	drive:
+ 210:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 211:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 212:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp1[4];
+ 213:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp2[4];
+ 214:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp3[4];
+ 215:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp4[4];
+ 216:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp5[4];
+ 217:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp6[4];
+ 218:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp7[4];
+ 219:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** char temp8[4];
+ 220:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 221:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 222:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void drive(int direction, int speed)
+ 223:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 621               	.LM69:
+ 622               	.LFBB12:
+ 623               	/* prologue: function */
+ 624               	/* frame size = 0 */
+ 625               	/* stack size = 0 */
+ 626               	.L__stack_usage = 0
+ 224:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 225:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(forwardsLeft, temp1,10);
+ 226:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("Forward Left: ");
+ 227:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp1);
+ 228:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("        ");
+ 229:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(forwardsRight, temp2,10);
+ 230:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("Forward Right: ");
+ 231:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp2);
+ 232:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("\r\n");
+ 233:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 234:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //   Encoder values:
+ 235:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                itoa(encoderValueLeft, temp1, 10);
+ 236:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                itoa(encoderValueRight, temp2, 10);
+ 237:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts("Encoder Left: ");
+ 238:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts(temp1);
+ 239:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts("     ");
+ 240:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 241:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 242:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts("Encoder Right: ");
+ 243:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts(temp2);
+ 244:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                uart_puts("\r\n");
+ 245:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 246:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 247:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 248:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Scaled speed reference
+ 249:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     speedReference = speed*PWM_FACTOR;
+ 628               	.LM70:
+ 629 020c E7E0      		ldi r30,lo8(7)
+ 630 020e E69F      		mul r30,r22
+ 631 0210 9001      		movw r18,r0
+ 632 0212 E79F      		mul r30,r23
+ 633 0214 300D      		add r19,r0
+ 634 0216 1124      		clr __zero_reg__
+ 635 0218 3093 0000 		sts speedReference+1,r19
+ 636 021c 2093 0000 		sts speedReference,r18
+ 250:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 251:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Scaled encoder values
+ 252:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Left motor
+ 253:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     unsigned int encoderValueLeftScaled = encoderValueLeft*PWM_FACTOR;
+ 638               	.LM71:
+ 639 0220 6091 0000 		lds r22,encoderValueLeft
+ 640 0224 7091 0000 		lds r23,encoderValueLeft+1
+ 641 0228 E69F      		mul r30,r22
+ 642 022a A001      		movw r20,r0
+ 643 022c E79F      		mul r30,r23
+ 644 022e 500D      		add r21,r0
+ 645 0230 1124      		clr __zero_reg__
+ 254:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (!forwardsLeft) {
+ 647               	.LM72:
+ 648 0232 6091 0000 		lds r22,forwardsLeft
+ 649 0236 7091 0000 		lds r23,forwardsLeft+1
+ 650 023a 672B      		or r22,r23
+ 651 023c 01F4      		brne .L32
+ 255:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         encoderValueLeftScaled = -(encoderValueLeftScaled);
+ 653               	.LM73:
+ 654 023e 5195      		neg r21
+ 655 0240 4195      		neg r20
+ 656 0242 5109      		sbc r21,__zero_reg__
+ 657               	.L32:
+ 256:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 257:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueLeft = 0;   // reset variable
+ 659               	.LM74:
+ 660 0244 1092 0000 		sts encoderValueLeft+1,__zero_reg__
+ 661 0248 1092 0000 		sts encoderValueLeft,__zero_reg__
+ 258:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // Right motor
+ 259:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     unsigned int encoderValueRightScaled = encoderValueRight*PWM_FACTOR;
+ 663               	.LM75:
+ 664 024c E091 0000 		lds r30,encoderValueRight
+ 665 0250 F091 0000 		lds r31,encoderValueRight+1
+ 666 0254 A7E0      		ldi r26,lo8(7)
+ 667 0256 AE9F      		mul r26,r30
+ 668 0258 B001      		movw r22,r0
+ 669 025a AF9F      		mul r26,r31
+ 670 025c 700D      		add r23,r0
+ 671 025e 1124      		clr __zero_reg__
+ 260:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (!forwardsRight) {
+ 673               	.LM76:
+ 674 0260 E091 0000 		lds r30,forwardsRight
+ 675 0264 F091 0000 		lds r31,forwardsRight+1
+ 676 0268 EF2B      		or r30,r31
+ 677 026a 01F4      		brne .L33
+ 261:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         encoderValueRightScaled = -(encoderValueRightScaled);
+ 679               	.LM77:
+ 680 026c 7195      		neg r23
+ 681 026e 6195      		neg r22
+ 682 0270 7109      		sbc r23,__zero_reg__
+ 683               	.L33:
+ 262:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 263:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     encoderValueRight = 0;   // reset variable
+ 685               	.LM78:
+ 686 0272 1092 0000 		sts encoderValueRight+1,__zero_reg__
+ 687 0276 1092 0000 		sts encoderValueRight,__zero_reg__
+ 264:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 265:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    itoa(encoderValueLeftScaled, temp7, 10);
+ 266:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    itoa(encoderValueRightScaled, temp8, 10);
+ 267:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts("Encoder Left: ");
+ 268:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts(temp7);
+ 269:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts("     ");
+ 270:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 271:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 272:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts("Encoder Right: ");
+ 273:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts(temp8);
+ 274:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //                    uart_puts("\r\n");
+ 275:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 276:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 277:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     int IValueTemp = (encoderValueRightScaled + (-encoderValueLeftScaled));
+ 278:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //  int IValueTemp = (encoderValueRightScaled + (-encoderValueLeftScaled) +direction);
+ 279:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 280:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    IValueTemp /= 2;    // split value, one for each motor
+ 281:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     IValueTemp *= K_I;    // split value, one for each motor
+ 282:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 283:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     IValue += IValueTemp;
+ 689               	.LM79:
+ 690 027a E091 0000 		lds r30,IValue
+ 691 027e F091 0000 		lds r31,IValue+1
+ 277:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     int IValueTemp = (encoderValueRightScaled + (-encoderValueLeftScaled));
+ 693               	.LM80:
+ 694 0282 DB01      		movw r26,r22
+ 695 0284 A41B      		sub r26,r20
+ 696 0286 B50B      		sbc r27,r21
+ 698               	.LM81:
+ 699 0288 EA0F      		add r30,r26
+ 700 028a FB1F      		adc r31,r27
+ 701 028c F093 0000 		sts IValue+1,r31
+ 702 0290 E093 0000 		sts IValue,r30
+ 284:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 285:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (IValue > pwmMax)
+ 704               	.LM82:
+ 705 0294 A091 0000 		lds r26,IValue
+ 706 0298 B091 0000 		lds r27,IValue+1
+ 707 029c E091 0000 		lds r30,pwmMax
+ 708 02a0 F091 0000 		lds r31,pwmMax+1
+ 709 02a4 EA17      		cp r30,r26
+ 710 02a6 FB07      		cpc r31,r27
+ 711 02a8 04F0      		brlt .L65
+ 286:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 287:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         IValue = pwmMax;
+ 288:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 289:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if (IValue < -pwmMax)
+ 713               	.LM83:
+ 714 02aa A091 0000 		lds r26,IValue
+ 715 02ae B091 0000 		lds r27,IValue+1
+ 716 02b2 F195      		neg r31
+ 717 02b4 E195      		neg r30
+ 718 02b6 F109      		sbc r31,__zero_reg__
+ 719 02b8 AE17      		cp r26,r30
+ 720 02ba BF07      		cpc r27,r31
+ 721 02bc 04F4      		brge .L35
+ 722               	.L65:
+ 290:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 291:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         IValue = -pwmMax;
+ 724               	.LM84:
+ 725 02be F093 0000 		sts IValue+1,r31
+ 726 02c2 E093 0000 		sts IValue,r30
+ 727               	.L35:
+ 292:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 293:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 294:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if(outLeftSide)
+ 729               	.LM85:
+ 730 02c6 E091 0000 		lds r30,outLeftSide
+ 731 02ca F091 0000 		lds r31,outLeftSide+1
+ 732 02ce EF2B      		or r30,r31
+ 733 02d0 01F0      		breq .L36
+ 295:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 296:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         // Turn hard right
+ 297:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled) - (IValue)); // slowdown right
+ 735               	.LM86:
+ 736 02d2 E091 0000 		lds r30,IValue
+ 737 02d6 F091 0000 		lds r31,IValue+1
+ 738 02da C901      		movw r24,r18
+ 739 02dc 861B      		sub r24,r22
+ 740 02de 970B      		sbc r25,r23
+ 741 02e0 8E1B      		sub r24,r30
+ 742 02e2 9F0B      		sbc r25,r31
+ 743 02e4 9093 0000 		sts errorDiffRight+1,r25
+ 744 02e8 8093 0000 		sts errorDiffRight,r24
+ 745 02ec 00C0      		rjmp .L66
+ 746               	.L36:
+ 298:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = ((speedReference - encoderValueLeftScaled)); // Keep speed left motor
+ 299:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 300:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(outRightSide)
+ 748               	.LM87:
+ 749 02ee E091 0000 		lds r30,outRightSide
+ 750 02f2 F091 0000 		lds r31,outRightSide+1
+ 751 02f6 EF2B      		or r30,r31
+ 752 02f8 01F0      		breq .L38
+ 301:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 302:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         // Turn hard left
+ 303:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = ((speedReference - encoderValueLeftScaled) + (IValue)); // slowdown left mo
+ 754               	.LM88:
+ 755 02fa 8091 0000 		lds r24,IValue
+ 756 02fe 9091 0000 		lds r25,IValue+1
+ 757 0302 820F      		add r24,r18
+ 758 0304 931F      		adc r25,r19
+ 759 0306 841B      		sub r24,r20
+ 760 0308 950B      		sbc r25,r21
+ 761 030a 9093 0000 		sts errorDiffLeft+1,r25
+ 762 030e 8093 0000 		sts errorDiffLeft,r24
+ 763 0312 00C0      		rjmp .L67
+ 764               	.L38:
+ 304:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled)); // Keep speed right motor
+ 305:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 306:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 1) // Nudge left
+ 766               	.LM89:
+ 767 0314 8130      		cpi r24,1
+ 768 0316 9105      		cpc r25,__zero_reg__
+ 769 0318 01F4      		brne .L39
+ 307:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 308:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = (0 - (encoderValueLeftScaled/2)); // stop left motor
+ 771               	.LM90:
+ 772 031a 5695      		lsr r21
+ 773 031c 4795      		ror r20
+ 774               	.L68:
+ 775 031e 5195      		neg r21
+ 776 0320 4195      		neg r20
+ 777 0322 5109      		sbc r21,__zero_reg__
+ 778 0324 5093 0000 		sts errorDiffLeft+1,r21
+ 779 0328 4093 0000 		sts errorDiffLeft,r20
+ 780               	.L67:
+ 309:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled)); // Keep speed right motor
+ 782               	.LM91:
+ 783 032c 261B      		sub r18,r22
+ 784 032e 370B      		sbc r19,r23
+ 785 0330 3093 0000 		sts errorDiffRight+1,r19
+ 786 0334 2093 0000 		sts errorDiffRight,r18
+ 787 0338 00C0      		rjmp .L37
+ 788               	.L39:
+ 310:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 311:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 2) // Nudge right
+ 790               	.LM92:
+ 791 033a 8230      		cpi r24,2
+ 792 033c 9105      		cpc r25,__zero_reg__
+ 793 033e 01F4      		brne .L40
+ 312:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 313:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = (0 - (encoderValueRightScaled/2)); // stop right motor
+ 795               	.LM93:
+ 796 0340 7695      		lsr r23
+ 797 0342 6795      		ror r22
+ 798               	.L70:
+ 799 0344 7195      		neg r23
+ 800 0346 6195      		neg r22
+ 801 0348 7109      		sbc r23,__zero_reg__
+ 802 034a 7093 0000 		sts errorDiffRight+1,r23
+ 803 034e 6093 0000 		sts errorDiffRight,r22
+ 804               	.L66:
+ 314:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = ((speedReference - encoderValueLeftScaled)); // Keep speed left motor
+ 806               	.LM94:
+ 807 0352 241B      		sub r18,r20
+ 808 0354 350B      		sbc r19,r21
+ 809 0356 3093 0000 		sts errorDiffLeft+1,r19
+ 810 035a 2093 0000 		sts errorDiffLeft,r18
+ 811 035e 00C0      		rjmp .L37
+ 812               	.L40:
+ 315:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 316:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 3) // medium left
+ 814               	.LM95:
+ 815 0360 8330      		cpi r24,3
+ 816 0362 9105      		cpc r25,__zero_reg__
+ 817 0364 01F0      		breq .L68
+ 317:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 318:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = (0 - encoderValueLeftScaled); // stop left motor
+ 319:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled)); // Keep speed right motor
+ 320:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 321:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 4) // medium right
+ 819               	.LM96:
+ 820 0366 8430      		cpi r24,4
+ 821 0368 9105      		cpc r25,__zero_reg__
+ 822 036a 01F0      		breq .L70
+ 322:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 323:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = (0 - encoderValueRightScaled); // stop right motor
+ 324:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = ((speedReference - encoderValueLeftScaled)); // Keep speed left motor
+ 325:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 326:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 7)  // turn 90 degrees left
+ 824               	.LM97:
+ 825 036c 8730      		cpi r24,7
+ 826 036e 9105      		cpc r25,__zero_reg__
+ 827 0370 01F4      		brne .L43
+ 327:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 328:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = (0); //((speedReference - encoderValueRightScaled));
+ 829               	.LM98:
+ 830 0372 1092 0000 		sts errorDiffRight+1,__zero_reg__
+ 831 0376 1092 0000 		sts errorDiffRight,__zero_reg__
+ 329:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = -300;
+ 833               	.LM99:
+ 834 037a 84ED      		ldi r24,lo8(-44)
+ 835 037c 9EEF      		ldi r25,lo8(-2)
+ 836 037e 9093 0000 		sts errorDiffLeft+1,r25
+ 837 0382 8093 0000 		sts errorDiffLeft,r24
+ 838 0386 00C0      		rjmp .L69
+ 839               	.L43:
+ 330:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 331:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorLeft();
+ 332:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 333:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 8) // turn 90 degrees right
+ 841               	.LM100:
+ 842 0388 8830      		cpi r24,8
+ 843 038a 9105      		cpc r25,__zero_reg__
+ 844 038c 01F4      		brne .L44
+ 334:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 335:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = 0; //((speedReference - encoderValueLeftScaled));
+ 846               	.LM101:
+ 847 038e 1092 0000 		sts errorDiffLeft+1,__zero_reg__
+ 848 0392 1092 0000 		sts errorDiffLeft,__zero_reg__
+ 336:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = -300;
+ 850               	.LM102:
+ 851 0396 84ED      		ldi r24,lo8(-44)
+ 852 0398 9EEF      		ldi r25,lo8(-2)
+ 853 039a 00C0      		rjmp .L72
+ 854               	.L44:
+ 337:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 338:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorRight();
+ 339:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 340:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 9) // turn left to line
+ 856               	.LM103:
+ 857 039c 8930      		cpi r24,9
+ 858 039e 9105      		cpc r25,__zero_reg__
+ 859 03a0 01F4      		brne .L45
+ 341:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 342:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = -150; //((speedReference - encoderValueLeftScaled));
+ 861               	.LM104:
+ 862 03a2 8AE6      		ldi r24,lo8(106)
+ 863 03a4 9FEF      		ldi r25,lo8(-1)
+ 864 03a6 9093 0000 		sts errorDiffLeft+1,r25
+ 865 03aa 8093 0000 		sts errorDiffLeft,r24
+ 343:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = 150;
+ 867               	.LM105:
+ 868 03ae 86E9      		ldi r24,lo8(-106)
+ 869 03b0 90E0      		ldi r25,0
+ 870 03b2 00C0      		rjmp .L71
+ 871               	.L45:
+ 344:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 345:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 10) // Turn right to line
+ 873               	.LM106:
+ 874 03b4 8A30      		cpi r24,10
+ 875 03b6 9105      		cpc r25,__zero_reg__
+ 876 03b8 01F4      		brne .L46
+ 346:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 347:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = 150; //((speedReference - encoderValueLeftScaled));
+ 878               	.LM107:
+ 879 03ba 86E9      		ldi r24,lo8(-106)
+ 880 03bc 90E0      		ldi r25,0
+ 881 03be 9093 0000 		sts errorDiffLeft+1,r25
+ 882 03c2 8093 0000 		sts errorDiffLeft,r24
+ 348:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = -150;
+ 884               	.LM108:
+ 885 03c6 8AE6      		ldi r24,lo8(106)
+ 886 03c8 9FEF      		ldi r25,lo8(-1)
+ 887               	.L71:
+ 888 03ca 9093 0000 		sts errorDiffRight+1,r25
+ 889 03ce 8093 0000 		sts errorDiffRight,r24
+ 890 03d2 00C0      		rjmp .L37
+ 891               	.L46:
+ 349:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 350:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 11)  // circle left
+ 893               	.LM109:
+ 894 03d4 8B30      		cpi r24,11
+ 895 03d6 9105      		cpc r25,__zero_reg__
+ 896 03d8 01F4      		brne .L47
+ 351:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 352:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** 
+ 353:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = -15;
+ 898               	.LM110:
+ 899 03da 81EF      		ldi r24,lo8(-15)
+ 900 03dc 9FEF      		ldi r25,lo8(-1)
+ 901 03de 9093 0000 		sts errorDiffLeft+1,r25
+ 902 03e2 8093 0000 		sts errorDiffLeft,r24
+ 354:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = 600;
+ 904               	.LM111:
+ 905 03e6 88E5      		ldi r24,lo8(88)
+ 906 03e8 92E0      		ldi r25,lo8(2)
+ 907 03ea 9093 0000 		sts errorDiffRight+1,r25
+ 908 03ee 8093 0000 		sts errorDiffRight,r24
+ 909 03f2 00C0      		rjmp .L69
+ 910               	.L47:
+ 355:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //        errorDiffLeft = ((0 - (encoderValueLeftScaled))/64); // little forward left motor
+ 356:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //        errorDiffRight = ((speedReference - encoderValueRightScaled)); // Keep speed right motor
+ 357:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 358:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorLeft();
+ 359:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 360:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 12) // circle right
+ 912               	.LM112:
+ 913 03f4 8C30      		cpi r24,12
+ 914 03f6 9105      		cpc r25,__zero_reg__
+ 915 03f8 01F4      		brne .L48
+ 361:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 362:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = 600;
+ 917               	.LM113:
+ 918 03fa 88E5      		ldi r24,lo8(88)
+ 919 03fc 92E0      		ldi r25,lo8(2)
+ 920 03fe 9093 0000 		sts errorDiffLeft+1,r25
+ 921 0402 8093 0000 		sts errorDiffLeft,r24
+ 363:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = -15;
+ 923               	.LM114:
+ 924 0406 81EF      		ldi r24,lo8(-15)
+ 925 0408 9FEF      		ldi r25,lo8(-1)
+ 926               	.L72:
+ 927 040a 9093 0000 		sts errorDiffRight+1,r25
+ 928 040e 8093 0000 		sts errorDiffRight,r24
+ 364:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //        errorDiffLeft = (speedReference - (encoderValueLeftScaled));
+ 365:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //        errorDiffRight = (0 - (encoderValueRightScaled/64));
+ 366:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 367:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorRight();
+ 930               	.LM115:
+ 931 0412 0E94 0000 		call backwardsMotorRight
+ 932 0416 00C0      		rjmp .L37
+ 933               	.L48:
+ 934 0418 F901      		movw r30,r18
+ 935 041a E61B      		sub r30,r22
+ 936 041c F70B      		sbc r31,r23
+ 937 041e BF01      		movw r22,r30
+ 368:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 369:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if(direction == 13)  // soft left
+ 939               	.LM116:
+ 940 0420 0D97      		sbiw r24,13
+ 941 0422 01F4      		brne .L49
+ 370:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 371:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = (0); // little forward left motor
+ 943               	.LM117:
+ 944 0424 1092 0000 		sts errorDiffLeft+1,__zero_reg__
+ 945 0428 1092 0000 		sts errorDiffLeft,__zero_reg__
+ 372:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled)); // Keep speed right motor
+ 947               	.LM118:
+ 948 042c F093 0000 		sts errorDiffRight+1,r31
+ 949 0430 E093 0000 		sts errorDiffRight,r30
+ 950               	.L69:
+ 373:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 374:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorLeft();
+ 952               	.LM119:
+ 953 0434 0E94 0000 		call backwardsMotorLeft
+ 954 0438 00C0      		rjmp .L37
+ 955               	.L49:
+ 375:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 376:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else
+ 377:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 378:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight = ((speedReference - encoderValueRightScaled) - (IValue));   // drive straig
+ 957               	.LM120:
+ 958 043a 8091 0000 		lds r24,IValue
+ 959 043e 9091 0000 		lds r25,IValue+1
+ 960 0442 681B      		sub r22,r24
+ 961 0444 790B      		sbc r23,r25
+ 962 0446 7093 0000 		sts errorDiffRight+1,r23
+ 963 044a 6093 0000 		sts errorDiffRight,r22
+ 379:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft = ((speedReference - encoderValueLeftScaled) + (IValue));     // drive straig
+ 965               	.LM121:
+ 966 044e 8091 0000 		lds r24,IValue
+ 967 0452 9091 0000 		lds r25,IValue+1
+ 968 0456 820F      		add r24,r18
+ 969 0458 931F      		adc r25,r19
+ 970 045a 841B      		sub r24,r20
+ 971 045c 950B      		sbc r25,r21
+ 972 045e 9093 0000 		sts errorDiffLeft+1,r25
+ 973 0462 8093 0000 		sts errorDiffLeft,r24
+ 974               	.L37:
+ 380:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 381:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 382:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 383:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 384:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(errorDiffLeft, temp5, 10);
+ 385:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(errorDiffRight, temp6, 10);
+ 386:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("errorDiffLeft: ");
+ 387:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp5);
+ 388:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("        ");
+ 389:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //
+ 390:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //
+ 391:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("errorDiffRight: ");
+ 392:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp6);
+ 393:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("\r\n");
+ 394:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 395:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 396:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 397:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // P block
+ 398:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 399:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (!stopFlag) {
+ 976               	.LM122:
+ 977 0466 8091 0000 		lds r24,stopFlag
+ 978 046a 9091 0000 		lds r25,stopFlag+1
+ 979 046e 892B      		or r24,r25
+ 980 0470 01F4      		brne .L50
+ 400:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffRight *= K_P; // Factor to be calculated
+ 982               	.LM123:
+ 983 0472 2091 0000 		lds r18,errorDiffRight
+ 984 0476 3091 0000 		lds r19,errorDiffRight+1
+ 985 047a C901      		movw r24,r18
+ 986 047c 880F      		lsl r24
+ 987 047e 991F      		rol r25
+ 988 0480 820F      		add r24,r18
+ 989 0482 931F      		adc r25,r19
+ 990 0484 9093 0000 		sts errorDiffRight+1,r25
+ 991 0488 8093 0000 		sts errorDiffRight,r24
+ 401:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         errorDiffLeft *= K_P;
+ 993               	.LM124:
+ 994 048c 2091 0000 		lds r18,errorDiffLeft
+ 995 0490 3091 0000 		lds r19,errorDiffLeft+1
+ 996 0494 C901      		movw r24,r18
+ 997 0496 880F      		lsl r24
+ 998 0498 991F      		rol r25
+ 999 049a 820F      		add r24,r18
+ 1000 049c 931F      		adc r25,r19
+ 1001 049e 9093 0000 		sts errorDiffLeft+1,r25
+ 1002 04a2 8093 0000 		sts errorDiffLeft,r24
+ 1003               	.L50:
+ 402:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 403:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 404:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(errorDiffLeft, temp3, 10);
+ 405:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    itoa(errorDiffRight, temp4, 10);
+ 406:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("errorDiffLeft after: ");
+ 407:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp3);
+ 408:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("        ");
+ 409:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //
+ 410:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //
+ 411:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("errorDiffRight after: ");
+ 412:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts(temp4);
+ 413:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //    uart_puts("\r\n");
+ 414:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     //
+ 415:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // PWM to motor right
+ 416:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 417:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (errorDiffRight > pwmMax)
+ 1005               	.LM125:
+ 1006 04a6 2091 0000 		lds r18,errorDiffRight
+ 1007 04aa 3091 0000 		lds r19,errorDiffRight+1
+ 1008 04ae 8091 0000 		lds r24,pwmMax
+ 1009 04b2 9091 0000 		lds r25,pwmMax+1
+ 1010 04b6 8217      		cp r24,r18
+ 1011 04b8 9307      		cpc r25,r19
+ 1012 04ba 04F0      		brlt .L73
+ 418:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 419:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1A = pwmMax;
+ 420:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         forwardMotorRight();
+ 421:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 422:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if (errorDiffRight < -pwmMax)
+ 1014               	.LM126:
+ 1015 04bc 4091 0000 		lds r20,errorDiffRight
+ 1016 04c0 5091 0000 		lds r21,errorDiffRight+1
+ 1017 04c4 2227      		clr r18
+ 1018 04c6 3327      		clr r19
+ 1019 04c8 281B      		sub r18,r24
+ 1020 04ca 390B      		sbc r19,r25
+ 1021 04cc 4217      		cp r20,r18
+ 1022 04ce 5307      		cpc r21,r19
+ 1023 04d0 04F0      		brlt .L55
+ 423:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 424:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1A = pwmMax;
+ 425:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorRight();
+ 426:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 427:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if (errorDiffRight < 0)
+ 1025               	.LM127:
+ 1026 04d2 8091 0000 		lds r24,errorDiffRight
+ 1027 04d6 9091 0000 		lds r25,errorDiffRight+1
+ 1028 04da 97FF      		sbrs r25,7
+ 1029 04dc 00C0      		rjmp .L54
+ 428:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 429:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1A = abs(errorDiffRight);
+ 1031               	.LM128:
+ 1032 04de 8091 0000 		lds r24,errorDiffRight
+ 1033 04e2 9091 0000 		lds r25,errorDiffRight+1
+ 1034 04e6 97FF      		sbrs r25,7
+ 1035 04e8 00C0      		rjmp .L55
+ 1036 04ea 9195      		neg r25
+ 1037 04ec 8195      		neg r24
+ 1038 04ee 9109      		sbc r25,__zero_reg__
+ 1039               	.L55:
+ 1040 04f0 9093 8900 		sts 136+1,r25
+ 1041 04f4 8093 8800 		sts 136,r24
+ 430:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorRight();
+ 1043               	.LM129:
+ 1044 04f8 0E94 0000 		call backwardsMotorRight
+ 1045 04fc 00C0      		rjmp .L52
+ 1046               	.L54:
+ 431:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 432:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else
+ 433:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 434:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1A = errorDiffRight;
+ 1048               	.LM130:
+ 1049 04fe 8091 0000 		lds r24,errorDiffRight
+ 1050 0502 9091 0000 		lds r25,errorDiffRight+1
+ 1051               	.L73:
+ 1052 0506 9093 8900 		sts 136+1,r25
+ 1053 050a 8093 8800 		sts 136,r24
+ 435:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         forwardMotorRight();
+ 1055               	.LM131:
+ 1056 050e 0E94 0000 		call forwardMotorRight
+ 1057               	.L52:
+ 436:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 437:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 438:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 439:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // PWM to motor left
+ 440:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 441:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (errorDiffLeft > pwmMax)
+ 1059               	.LM132:
+ 1060 0512 2091 0000 		lds r18,errorDiffLeft
+ 1061 0516 3091 0000 		lds r19,errorDiffLeft+1
+ 1062 051a 8091 0000 		lds r24,pwmMax
+ 1063 051e 9091 0000 		lds r25,pwmMax+1
+ 1064 0522 8217      		cp r24,r18
+ 1065 0524 9307      		cpc r25,r19
+ 1066 0526 04F0      		brlt .L74
+ 442:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 443:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         //        uart_puts("den er her 1\r\n");
+ 444:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1B = pwmMax;
+ 445:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         forwardMotorLeft();
+ 446:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 447:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if (errorDiffLeft < -pwmMax)
+ 1068               	.LM133:
+ 1069 0528 4091 0000 		lds r20,errorDiffLeft
+ 1070 052c 5091 0000 		lds r21,errorDiffLeft+1
+ 1071 0530 2227      		clr r18
+ 1072 0532 3327      		clr r19
+ 1073 0534 281B      		sub r18,r24
+ 1074 0536 390B      		sbc r19,r25
+ 1075 0538 4217      		cp r20,r18
+ 1076 053a 5307      		cpc r21,r19
+ 1077 053c 04F0      		brlt .L60
+ 448:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 449:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 450:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         //        uart_puts("den er her 2\r\n");
+ 451:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1B = pwmMax;
+ 452:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorLeft();
+ 453:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 454:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else if (errorDiffLeft < 0)
+ 1079               	.LM134:
+ 1080 053e 8091 0000 		lds r24,errorDiffLeft
+ 1081 0542 9091 0000 		lds r25,errorDiffLeft+1
+ 1082 0546 97FF      		sbrs r25,7
+ 1083 0548 00C0      		rjmp .L59
+ 455:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 456:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         //        uart_puts("den er her 3\r\n");
+ 457:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1B = abs(errorDiffLeft);
+ 1085               	.LM135:
+ 1086 054a 8091 0000 		lds r24,errorDiffLeft
+ 1087 054e 9091 0000 		lds r25,errorDiffLeft+1
+ 1088 0552 97FF      		sbrs r25,7
+ 1089 0554 00C0      		rjmp .L60
+ 1090 0556 9195      		neg r25
+ 1091 0558 8195      		neg r24
+ 1092 055a 9109      		sbc r25,__zero_reg__
+ 1093               	.L60:
+ 1094 055c 9093 8B00 		sts 138+1,r25
+ 1095 0560 8093 8A00 		sts 138,r24
+ 458:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         backwardsMotorLeft();
+ 1097               	.LM136:
+ 1098 0564 0E94 0000 		call backwardsMotorLeft
+ 1099 0568 00C0      		rjmp .L57
+ 1100               	.L59:
+ 459:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 460:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     else
+ 461:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 462:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 463:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         //        uart_puts("den er her 4\r\n");
+ 464:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         OCR1B = errorDiffLeft;
+ 1102               	.LM137:
+ 1103 056a 8091 0000 		lds r24,errorDiffLeft
+ 1104 056e 9091 0000 		lds r25,errorDiffLeft+1
+ 1105               	.L74:
+ 1106 0572 9093 8B00 		sts 138+1,r25
+ 1107 0576 8093 8A00 		sts 138,r24
+ 465:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         forwardMotorLeft();
+ 1109               	.LM138:
+ 1110 057a 0E94 0000 		call forwardMotorLeft
+ 1111               	.L57:
+ 466:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 467:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 468:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****    
+ 469:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****    
+ 470:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 471:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     // STOP
+ 472:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     if (stopFlag == 1)
+ 1113               	.LM139:
+ 1114 057e 8091 0000 		lds r24,stopFlag
+ 1115 0582 9091 0000 		lds r25,stopFlag+1
+ 1116 0586 0197      		sbiw r24,1
+ 1117 0588 01F4      		brne .L31
+ 473:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 474:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (errorDiffLeft > -70 && errorDiffLeft < 70)
+ 1119               	.LM140:
+ 1120 058a 8091 0000 		lds r24,errorDiffLeft
+ 1121 058e 9091 0000 		lds r25,errorDiffLeft+1
+ 1122 0592 8B3B      		cpi r24,-69
+ 1123 0594 9F4F      		sbci r25,-1
+ 1124 0596 04F0      		brlt .L63
+ 1126               	.LM141:
+ 1127 0598 8091 0000 		lds r24,errorDiffLeft
+ 1128 059c 9091 0000 		lds r25,errorDiffLeft+1
+ 1129 05a0 8634      		cpi r24,70
+ 1130 05a2 9105      		cpc r25,__zero_reg__
+ 1131 05a4 04F4      		brge .L63
+ 475:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         {
+ 476:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             OCR1B = 0;
+ 1133               	.LM142:
+ 1134 05a6 1092 8B00 		sts 138+1,__zero_reg__
+ 1135 05aa 1092 8A00 		sts 138,__zero_reg__
+ 1136               	.L63:
+ 477:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 478:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 479:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (errorDiffRight > -70 && errorDiffRight < 70) {
+ 1138               	.LM143:
+ 1139 05ae 8091 0000 		lds r24,errorDiffRight
+ 1140 05b2 9091 0000 		lds r25,errorDiffRight+1
+ 1141 05b6 8B3B      		cpi r24,-69
+ 1142 05b8 9F4F      		sbci r25,-1
+ 1143 05ba 04F0      		brlt .L31
+ 1145               	.LM144:
+ 1146 05bc 8091 0000 		lds r24,errorDiffRight
+ 1147 05c0 9091 0000 		lds r25,errorDiffRight+1
+ 1148 05c4 8634      		cpi r24,70
+ 1149 05c6 9105      		cpc r25,__zero_reg__
+ 1150 05c8 04F4      		brge .L31
+ 480:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             OCR1A = 0;
+ 1152               	.LM145:
+ 1153 05ca 1092 8900 		sts 136+1,__zero_reg__
+ 1154 05ce 1092 8800 		sts 136,__zero_reg__
+ 1155               	.L31:
+ 1156 05d2 0895      		ret
+ 1162               	.Lscope12:
+ 1164               	.global	stop
+ 1166               	stop:
+ 481:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 482:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         
+ 483:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 484:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 485:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     
+ 486:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            itoa(OCR1B, temp1, 10);
+ 487:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            itoa(OCR1A, temp2, 10);
+ 488:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts("OCR1B: ");
+ 489:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts(temp1);
+ 490:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts("        ");
+ 491:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 492:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //    
+ 493:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts("OCR1A: ");
+ 494:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts(temp2);
+ 495:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** //            uart_puts("\r\n");
+ 496:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** }
+ 497:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** void stop(void)
+ 498:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c **** {
+ 1168               	.LM146:
+ 1169               	.LFBB13:
+ 1170               	/* prologue: function */
+ 1171               	/* frame size = 0 */
+ 1172               	/* stack size = 0 */
+ 1173               	.L__stack_usage = 0
+ 499:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     stopFlag = 1;
+ 1175               	.LM147:
+ 1176 05d4 81E0      		ldi r24,lo8(1)
+ 1177 05d6 90E0      		ldi r25,0
+ 1178 05d8 9093 0000 		sts stopFlag+1,r25
+ 1179 05dc 8093 0000 		sts stopFlag,r24
+ 1180               	.L76:
+ 500:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     while(encoderValueLeft != 0 && encoderValueRight != 0)
+ 1182               	.LM148:
+ 1183 05e0 2091 0000 		lds r18,encoderValueLeft
+ 1184 05e4 3091 0000 		lds r19,encoderValueLeft+1
+ 1185 05e8 8091 0000 		lds r24,encoderValueRight
+ 1186 05ec 9091 0000 		lds r25,encoderValueRight+1
+ 1187               	.L78:
+ 1188 05f0 2115      		cp r18,__zero_reg__
+ 1189 05f2 3105      		cpc r19,__zero_reg__
+ 1190 05f4 01F0      		breq .L79
+ 1192               	.LM149:
+ 1193 05f6 0097      		sbiw r24,0
+ 1194 05f8 01F0      		breq .L79
+ 501:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     {
+ 502:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         if (adjustSpeed)
+ 1196               	.LM150:
+ 1197 05fa 4091 0000 		lds r20,adjustSpeed
+ 1198 05fe 4423      		tst r20
+ 1199 0600 01F0      		breq .L78
+ 503:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         {
+ 504:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             adjustSpeed = false;
+ 1201               	.LM151:
+ 1202 0602 1092 0000 		sts adjustSpeed,__zero_reg__
+ 505:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****             drive(0,0);
+ 1204               	.LM152:
+ 1205 0606 60E0      		ldi r22,0
+ 1206 0608 70E0      		ldi r23,0
+ 1207 060a 80E0      		ldi r24,0
+ 1208 060c 90E0      		ldi r25,0
+ 1209 060e 0E94 0000 		call drive
+ 1210 0612 00C0      		rjmp .L76
+ 1211               	.L79:
+ 506:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****         }
+ 507:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     }
+ 508:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MotorController.c ****     stopFlag = 0;
+ 1213               	.LM153:
+ 1214 0614 1092 0000 		sts stopFlag+1,__zero_reg__
+ 1215 0618 1092 0000 		sts stopFlag,__zero_reg__
+ 1216 061c 0895      		ret
+ 1218               	.Lscope13:
+ 1219               		.data
+ 1222               	count10ms.2084:
+ 1223 0000 0A00      		.word	10
+ 1224               		.comm	temp8,4,1
+ 1225               		.comm	temp7,4,1
+ 1226               		.comm	temp6,4,1
+ 1227               		.comm	temp5,4,1
+ 1228               		.comm	temp4,4,1
+ 1229               		.comm	temp3,4,1
+ 1230               		.comm	temp2,4,1
+ 1231               		.comm	temp1,4,1
+ 1232               		.comm	turn90degreesRight,2,1
+ 1233               		.comm	turn90degreesLeft,2,1
+ 1234               		.comm	outRightSide,2,1
+ 1235               		.comm	outLeftSide,2,1
+ 1236               	.global	pwmMax
+ 1239               	pwmMax:
+ 1240 0002 FF01      		.word	511
+ 1241               	.global	speedReference
+ 1244               	speedReference:
+ 1245 0004 8C00      		.word	140
+ 1246               	.global	forwardsRight
+ 1247               		.section .bss
+ 1250               	forwardsRight:
+ 1251 0000 0000      		.zero	2
+ 1252               	.global	forwardsLeft
+ 1255               	forwardsLeft:
+ 1256 0002 0000      		.zero	2
+ 1257               	.global	backwardsRight
+ 1260               	backwardsRight:
+ 1261 0004 0000      		.zero	2
+ 1262               	.global	backwardsLeft
+ 1265               	backwardsLeft:
+ 1266 0006 0000      		.zero	2
+ 1267               		.comm	errorDiffLeft,2,1
+ 1268               		.comm	errorDiffRight,2,1
+ 1269               		.comm	IValue,2,1
+ 1270               	.global	time1ms
+ 1273               	time1ms:
+ 1274 0008 0000      		.zero	2
+ 1275               	.global	adjustSpeed
+ 1278               	adjustSpeed:
+ 1279 000a 00        		.zero	1
+ 1280               	.global	encoderValueLeft
+ 1283               	encoderValueLeft:
+ 1284 000b 0000      		.zero	2
+ 1285               	.global	encoderValueRight
+ 1288               	encoderValueRight:
+ 1289 000d 0000      		.zero	2
+ 1290               	.global	stopFlag
+ 1293               	stopFlag:
+ 1294 000f 0000      		.zero	2
+ 1295               		.comm	newDirection,2,1
+ 1323               		.text
+ 1325               	.Letext0:
+ 1326               		.ident	"GCC: (GNU) 4.8.1"
+ 1327               	.global __do_copy_data
+ 1328               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 MotorController.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:121    .text:00000000 motor_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:193    .text:00000036 motor_timer_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:245    .text:0000006e __vector_5
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1288   .bss:0000000d encoderValueRight
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1250   .bss:00000000 forwardsRight
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:303    .text:000000ba __vector_6
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:361    .text:00000106 __vector_7
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1283   .bss:0000000b encoderValueLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1255   .bss:00000002 forwardsLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:419    .text:00000152 __vector_8
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:477    .text:0000019e __vector_21
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1273   .bss:00000008 time1ms
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1222   .data:00000000 count10ms.2084
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1278   .bss:0000000a adjustSpeed
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:537    .text:000001f4 forwardMotorLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:557    .text:000001fa forwardMotorRight
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:577    .text:00000200 backwardsMotorLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:597    .text:00000206 backwardsMotorRight
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:619    .text:0000020c drive
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1244   .data:00000004 speedReference
+                            *COM*:00000002 IValue
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1239   .data:00000002 pwmMax
+                            *COM*:00000002 outLeftSide
+                            *COM*:00000002 errorDiffRight
+                            *COM*:00000002 outRightSide
+                            *COM*:00000002 errorDiffLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1293   .bss:0000000f stopFlag
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1166   .text:000005d4 stop
+                            *COM*:00000004 temp8
+                            *COM*:00000004 temp7
+                            *COM*:00000004 temp6
+                            *COM*:00000004 temp5
+                            *COM*:00000004 temp4
+                            *COM*:00000004 temp3
+                            *COM*:00000004 temp2
+                            *COM*:00000004 temp1
+                            *COM*:00000002 turn90degreesRight
+                            *COM*:00000002 turn90degreesLeft
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1260   .bss:00000004 backwardsRight
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc3Bl55Z.s:1265   .bss:00000006 backwardsLeft
+                            *COM*:00000002 newDirection
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

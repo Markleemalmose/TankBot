@@ -1,0 +1,593 @@
+   1               		.file	"lineStateMachine.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 115               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 116               	.LC0:
+ 117 0000 4361 7365 		.string	"Case 5: Sensor 1 and 3"
+ 117      2035 3A20 
+ 117      5365 6E73 
+ 117      6F72 2031 
+ 117      2061 6E64 
+ 118               	.LC1:
+ 119 0017 4361 7365 		.string	"Case 7: Sensor 1, 2 and 4"
+ 119      2037 3A20 
+ 119      5365 6E73 
+ 119      6F72 2031 
+ 119      2C20 3220 
+ 120               	.LC2:
+ 121 0031 4361 7365 		.string	"Case 9: Sensor 1 and 4"
+ 121      2039 3A20 
+ 121      5365 6E73 
+ 121      6F72 2031 
+ 121      2061 6E64 
+ 122               	.LC3:
+ 123 0048 4361 7365 		.string	"Case 10: Sensor 2 and 4"
+ 123      2031 303A 
+ 123      2053 656E 
+ 123      736F 7220 
+ 123      3220 616E 
+ 124               	.LC4:
+ 125 0060 4361 7365 		.string	"Case 11: Sensor 1, 2 and 4"
+ 125      2031 313A 
+ 125      2053 656E 
+ 125      736F 7220 
+ 125      312C 2032 
+ 126               	.LC5:
+ 127 007b 4361 7365 		.string	"Case 13: Sensor 1, 3 and 4"
+ 127      2031 333A 
+ 127      2053 656E 
+ 127      736F 7220 
+ 127      312C 2033 
+ 128               	.LC6:
+ 129 0096 4361 7365 		.string	"Case 14: Sensor 2, 3 and 4"
+ 129      2031 343A 
+ 129      2053 656E 
+ 129      736F 7220 
+ 129      322C 2033 
+ 130               	.LC7:
+ 131 00b1 4855 483F 		.string	"HUH?!"
+ 131      2100 
+ 132               		.text
+ 136               	.global	lineStateMachine
+ 138               	lineStateMachine:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //  StateMachine.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //  Robot_test
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //  Created by Mark Lee Malmose on 20/03/15.
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //  Copyright (c) 2015 Mark Lee Malmose. All rights reserved.
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** //
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #include "lineStateMachine.h"
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #include "LineSensors.h"
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #include "MotorController.h"
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #include <util/delay.h>
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #include <stdlib.h>
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #define FORWARD 0
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #define NUDGE_LEFT 1
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #define NUDGE_RIGHT 2
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #define MEDIUM_LEFT 3
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** #define MEDIUM_RIGHT 4
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** void sendUartToInterface(char command, char *message);
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** volatile int speed = 140;       // max 95
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** volatile int outLeftSide = 0;
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** volatile int outRightSide = 0;
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** volatile int countNoLine = 0;
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** void lineStateMachine(int newLine, int prevLine)
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** {
+ 140               	.LM0:
+ 141               	.LFBB1:
+ 142               	/* prologue: function */
+ 143               	/* frame size = 0 */
+ 144               	/* stack size = 0 */
+ 145               	.L__stack_usage = 0
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****     
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****     switch (newLine) {
+ 147               	.LM1:
+ 148 0000 8031      		cpi r24,16
+ 149 0002 9105      		cpc r25,__zero_reg__
+ 150 0004 00F0      		brlo .+2
+ 151 0006 00C0      		rjmp .L2
+ 152 0008 FC01      		movw r30,r24
+ 153 000a E050      		subi r30,lo8(-(gs(.L4)))
+ 154 000c F040      		sbci r31,hi8(-(gs(.L4)))
+ 155 000e 0C94 0000 		jmp __tablejump2__
+ 156               		.section	.progmem.gcc_sw_table,"a",@progbits
+ 157               		.p2align	1
+ 158               	.L4:
+ 159 0000 0000      		.word gs(.L3)
+ 160 0002 0000      		.word gs(.L5)
+ 161 0004 0000      		.word gs(.L7)
+ 162 0006 0000      		.word gs(.L7)
+ 163 0008 0000      		.word gs(.L16)
+ 164 000a 0000      		.word gs(.L9)
+ 165 000c 0000      		.word gs(.L10)
+ 166 000e 0000      		.word gs(.L11)
+ 167 0010 0000      		.word gs(.L12)
+ 168 0012 0000      		.word gs(.L13)
+ 169 0014 0000      		.word gs(.L14)
+ 170 0016 0000      		.word gs(.L15)
+ 171 0018 0000      		.word gs(.L16)
+ 172 001a 0000      		.word gs(.L17)
+ 173 001c 0000      		.word gs(.L18)
+ 174 001e 0000      		.word gs(.L19)
+ 175               		.text
+ 176               	.L3:
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 0:
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine++;
+ 178               	.LM2:
+ 179 0012 8091 0000 		lds r24,countNoLine
+ 180 0016 9091 0000 		lds r25,countNoLine+1
+ 181 001a 0196      		adiw r24,1
+ 182 001c 9093 0000 		sts countNoLine+1,r25
+ 183 0020 8093 0000 		sts countNoLine,r24
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             if (prevLine == 1 || outRightSide == 1) {
+ 185               	.LM3:
+ 186 0024 6130      		cpi r22,1
+ 187 0026 7105      		cpc r23,__zero_reg__
+ 188 0028 01F0      		breq .L20
+ 190               	.LM4:
+ 191 002a 8091 0000 		lds r24,outRightSide
+ 192 002e 9091 0000 		lds r25,outRightSide+1
+ 193 0032 0197      		sbiw r24,1
+ 194 0034 01F4      		brne .L21
+ 195               	.L20:
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****                 outRightSide = 1;
+ 197               	.LM5:
+ 198 0036 81E0      		ldi r24,lo8(1)
+ 199 0038 90E0      		ldi r25,0
+ 200 003a 9093 0000 		sts outRightSide+1,r25
+ 201 003e 8093 0000 		sts outRightSide,r24
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****                 drive(MEDIUM_LEFT, 10);
+ 203               	.LM6:
+ 204 0042 6AE0      		ldi r22,lo8(10)
+ 205 0044 70E0      		ldi r23,0
+ 206 0046 83E0      		ldi r24,lo8(3)
+ 207 0048 90E0      		ldi r25,0
+ 208 004a 00C0      		rjmp .L32
+ 209               	.L21:
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****                 
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             } else if (prevLine == 8 || outLeftSide == 1) {
+ 211               	.LM7:
+ 212 004c 6830      		cpi r22,8
+ 213 004e 7105      		cpc r23,__zero_reg__
+ 214 0050 01F0      		breq .L23
+ 216               	.LM8:
+ 217 0052 8091 0000 		lds r24,outLeftSide
+ 218 0056 9091 0000 		lds r25,outLeftSide+1
+ 219 005a 0197      		sbiw r24,1
+ 220 005c 01F0      		breq .+2
+ 221 005e 00C0      		rjmp .L35
+ 222               	.L23:
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****                 outLeftSide = 1;
+ 224               	.LM9:
+ 225 0060 81E0      		ldi r24,lo8(1)
+ 226 0062 90E0      		ldi r25,0
+ 227 0064 9093 0000 		sts outLeftSide+1,r25
+ 228 0068 8093 0000 		sts outLeftSide,r24
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****                 drive(MEDIUM_RIGHT, 10);
+ 230               	.LM10:
+ 231 006c 6AE0      		ldi r22,lo8(10)
+ 232 006e 70E0      		ldi r23,0
+ 233 0070 84E0      		ldi r24,lo8(4)
+ 234 0072 90E0      		ldi r25,0
+ 235               	.L32:
+ 236 0074 0E94 0000 		call drive
+ 237 0078 00C0      		rjmp .L35
+ 238               	.L5:
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             }
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****            
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(FORWARD, speed);
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 1:                                 //  1 0 0 0
+  49:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 240               	.LM11:
+ 241 007a 1092 0000 		sts countNoLine+1,__zero_reg__
+ 242 007e 1092 0000 		sts countNoLine,__zero_reg__
+  50:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 244               	.LM12:
+ 245 0082 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 246 0086 1092 0000 		sts outLeftSide,__zero_reg__
+  51:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 248               	.LM13:
+ 249 008a 1092 0000 		sts outRightSide+1,__zero_reg__
+ 250 008e 1092 0000 		sts outRightSide,__zero_reg__
+  52:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  53:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(MEDIUM_LEFT, speed);
+ 252               	.LM14:
+ 253 0092 6091 0000 		lds r22,speed
+ 254 0096 7091 0000 		lds r23,speed+1
+ 255 009a 83E0      		ldi r24,lo8(3)
+ 256 009c 90E0      		ldi r25,0
+ 257               	.L33:
+ 258 009e 0C94 0000 		jmp drive
+ 259               	.L7:
+  54:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  55:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  56:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 2:                                 //  0 1 0 0
+  57:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+  58:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+  59:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+  60:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  61:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(NUDGE_LEFT, speed);
+  62:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  63:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  64:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 3:                                 //  1 1 0 0
+  65:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 261               	.LM15:
+ 262 00a2 1092 0000 		sts countNoLine+1,__zero_reg__
+ 263 00a6 1092 0000 		sts countNoLine,__zero_reg__
+  66:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 265               	.LM16:
+ 266 00aa 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 267 00ae 1092 0000 		sts outLeftSide,__zero_reg__
+  67:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 269               	.LM17:
+ 270 00b2 1092 0000 		sts outRightSide+1,__zero_reg__
+ 271 00b6 1092 0000 		sts outRightSide,__zero_reg__
+  68:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  69:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(NUDGE_LEFT, speed);
+ 273               	.LM18:
+ 274 00ba 6091 0000 		lds r22,speed
+ 275 00be 7091 0000 		lds r23,speed+1
+ 276 00c2 81E0      		ldi r24,lo8(1)
+ 277 00c4 90E0      		ldi r25,0
+ 278 00c6 00C0      		rjmp .L33
+ 279               	.L9:
+  70:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  71:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  72:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 4:                                 //  0 0 1 0
+  73:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+  74:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+  75:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+  76:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  77:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(NUDGE_RIGHT, speed);
+  78:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  79:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  80:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 5:                                 //  1 0 1 0
+  81:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 281               	.LM19:
+ 282 00c8 1092 0000 		sts countNoLine+1,__zero_reg__
+ 283 00cc 1092 0000 		sts countNoLine,__zero_reg__
+  82:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 285               	.LM20:
+ 286 00d0 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 287 00d4 1092 0000 		sts outLeftSide,__zero_reg__
+  83:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 289               	.LM21:
+ 290 00d8 1092 0000 		sts outRightSide+1,__zero_reg__
+ 291 00dc 1092 0000 		sts outRightSide,__zero_reg__
+  84:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  85:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+  86:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 5: Sensor 1 and 3");
+ 293               	.LM22:
+ 294 00e0 60E0      		ldi r22,lo8(.LC0)
+ 295 00e2 70E0      		ldi r23,hi8(.LC0)
+ 296 00e4 00C0      		rjmp .L34
+ 297               	.L10:
+  87:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  88:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  89:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 6:                                 //  0 1 1 0
+  90:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 299               	.LM23:
+ 300 00e6 1092 0000 		sts countNoLine+1,__zero_reg__
+ 301 00ea 1092 0000 		sts countNoLine,__zero_reg__
+  91:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 303               	.LM24:
+ 304 00ee 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 305 00f2 1092 0000 		sts outLeftSide,__zero_reg__
+  92:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 307               	.LM25:
+ 308 00f6 1092 0000 		sts outRightSide+1,__zero_reg__
+ 309 00fa 1092 0000 		sts outRightSide,__zero_reg__
+ 310               	.L35:
+  93:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  94:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(FORWARD, speed);
+ 312               	.LM26:
+ 313 00fe 6091 0000 		lds r22,speed
+ 314 0102 7091 0000 		lds r23,speed+1
+ 315 0106 80E0      		ldi r24,0
+ 316 0108 90E0      		ldi r25,0
+ 317 010a 00C0      		rjmp .L33
+ 318               	.L11:
+  95:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+  96:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+  97:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 7:                                 //  1 1 1 0
+  98:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 320               	.LM27:
+ 321 010c 1092 0000 		sts countNoLine+1,__zero_reg__
+ 322 0110 1092 0000 		sts countNoLine,__zero_reg__
+  99:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 324               	.LM28:
+ 325 0114 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 326 0118 1092 0000 		sts outLeftSide,__zero_reg__
+ 100:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 328               	.LM29:
+ 329 011c 1092 0000 		sts outRightSide+1,__zero_reg__
+ 330 0120 1092 0000 		sts outRightSide,__zero_reg__
+ 101:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 102:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 103:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 7: Sensor 1, 2 and 4");
+ 332               	.LM30:
+ 333 0124 60E0      		ldi r22,lo8(.LC1)
+ 334 0126 70E0      		ldi r23,hi8(.LC1)
+ 335 0128 00C0      		rjmp .L34
+ 336               	.L12:
+ 104:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 105:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 106:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 107:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 8:                                 //  0 0 0 1
+ 108:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 338               	.LM31:
+ 339 012a 1092 0000 		sts countNoLine+1,__zero_reg__
+ 340 012e 1092 0000 		sts countNoLine,__zero_reg__
+ 109:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 342               	.LM32:
+ 343 0132 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 344 0136 1092 0000 		sts outLeftSide,__zero_reg__
+ 110:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 346               	.LM33:
+ 347 013a 1092 0000 		sts outRightSide+1,__zero_reg__
+ 348 013e 1092 0000 		sts outRightSide,__zero_reg__
+ 111:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 112:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(MEDIUM_RIGHT, speed);
+ 350               	.LM34:
+ 351 0142 6091 0000 		lds r22,speed
+ 352 0146 7091 0000 		lds r23,speed+1
+ 353 014a 84E0      		ldi r24,lo8(4)
+ 354 014c 90E0      		ldi r25,0
+ 355 014e 00C0      		rjmp .L33
+ 356               	.L13:
+ 113:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 114:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 115:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 9:                                 //  1 0 0 1
+ 116:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 358               	.LM35:
+ 359 0150 1092 0000 		sts countNoLine+1,__zero_reg__
+ 360 0154 1092 0000 		sts countNoLine,__zero_reg__
+ 117:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 362               	.LM36:
+ 363 0158 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 364 015c 1092 0000 		sts outLeftSide,__zero_reg__
+ 118:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 366               	.LM37:
+ 367 0160 1092 0000 		sts outRightSide+1,__zero_reg__
+ 368 0164 1092 0000 		sts outRightSide,__zero_reg__
+ 119:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 120:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 121:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 9: Sensor 1 and 4");
+ 370               	.LM38:
+ 371 0168 60E0      		ldi r22,lo8(.LC2)
+ 372 016a 70E0      		ldi r23,hi8(.LC2)
+ 373 016c 00C0      		rjmp .L34
+ 374               	.L14:
+ 122:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 123:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 124:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 125:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 10:                                 //  0 1 0 1
+ 126:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 376               	.LM39:
+ 377 016e 1092 0000 		sts countNoLine+1,__zero_reg__
+ 378 0172 1092 0000 		sts countNoLine,__zero_reg__
+ 127:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 380               	.LM40:
+ 381 0176 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 382 017a 1092 0000 		sts outLeftSide,__zero_reg__
+ 128:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 384               	.LM41:
+ 385 017e 1092 0000 		sts outRightSide+1,__zero_reg__
+ 386 0182 1092 0000 		sts outRightSide,__zero_reg__
+ 129:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 130:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 131:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 10: Sensor 2 and 4");
+ 388               	.LM42:
+ 389 0186 60E0      		ldi r22,lo8(.LC3)
+ 390 0188 70E0      		ldi r23,hi8(.LC3)
+ 391 018a 00C0      		rjmp .L34
+ 392               	.L15:
+ 132:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 133:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 134:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 135:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 11:                                 //  1 1 0 1
+ 136:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 394               	.LM43:
+ 395 018c 1092 0000 		sts countNoLine+1,__zero_reg__
+ 396 0190 1092 0000 		sts countNoLine,__zero_reg__
+ 137:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 398               	.LM44:
+ 399 0194 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 400 0198 1092 0000 		sts outLeftSide,__zero_reg__
+ 138:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 402               	.LM45:
+ 403 019c 1092 0000 		sts outRightSide+1,__zero_reg__
+ 404 01a0 1092 0000 		sts outRightSide,__zero_reg__
+ 139:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 140:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 141:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 11: Sensor 1, 2 and 4");
+ 406               	.LM46:
+ 407 01a4 60E0      		ldi r22,lo8(.LC4)
+ 408 01a6 70E0      		ldi r23,hi8(.LC4)
+ 409 01a8 00C0      		rjmp .L34
+ 410               	.L16:
+ 142:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 143:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 144:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 145:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 12:                                 //  0 0 1 1
+ 146:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 412               	.LM47:
+ 413 01aa 1092 0000 		sts countNoLine+1,__zero_reg__
+ 414 01ae 1092 0000 		sts countNoLine,__zero_reg__
+ 147:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 416               	.LM48:
+ 417 01b2 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 418 01b6 1092 0000 		sts outLeftSide,__zero_reg__
+ 148:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 420               	.LM49:
+ 421 01ba 1092 0000 		sts outRightSide+1,__zero_reg__
+ 422 01be 1092 0000 		sts outRightSide,__zero_reg__
+ 149:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 150:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             drive(NUDGE_RIGHT, speed);
+ 424               	.LM50:
+ 425 01c2 6091 0000 		lds r22,speed
+ 426 01c6 7091 0000 		lds r23,speed+1
+ 427 01ca 82E0      		ldi r24,lo8(2)
+ 428 01cc 90E0      		ldi r25,0
+ 429 01ce 00C0      		rjmp .L33
+ 430               	.L17:
+ 151:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 152:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 153:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 13:                                 //  1 0 1 1
+ 154:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 432               	.LM51:
+ 433 01d0 1092 0000 		sts countNoLine+1,__zero_reg__
+ 434 01d4 1092 0000 		sts countNoLine,__zero_reg__
+ 155:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 436               	.LM52:
+ 437 01d8 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 438 01dc 1092 0000 		sts outLeftSide,__zero_reg__
+ 156:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 440               	.LM53:
+ 441 01e0 1092 0000 		sts outRightSide+1,__zero_reg__
+ 442 01e4 1092 0000 		sts outRightSide,__zero_reg__
+ 157:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 158:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 159:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 13: Sensor 1, 3 and 4");
+ 444               	.LM54:
+ 445 01e8 60E0      		ldi r22,lo8(.LC5)
+ 446 01ea 70E0      		ldi r23,hi8(.LC5)
+ 447 01ec 00C0      		rjmp .L34
+ 448               	.L18:
+ 160:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 161:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 162:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 163:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 14:                                 //  0 1 1 1
+ 164:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 450               	.LM55:
+ 451 01ee 1092 0000 		sts countNoLine+1,__zero_reg__
+ 452 01f2 1092 0000 		sts countNoLine,__zero_reg__
+ 165:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 454               	.LM56:
+ 455 01f6 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 456 01fa 1092 0000 		sts outLeftSide,__zero_reg__
+ 166:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 458               	.LM57:
+ 459 01fe 1092 0000 		sts outRightSide+1,__zero_reg__
+ 460 0202 1092 0000 		sts outRightSide,__zero_reg__
+ 167:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 168:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 169:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "Case 14: Sensor 2, 3 and 4");
+ 462               	.LM58:
+ 463 0206 60E0      		ldi r22,lo8(.LC6)
+ 464 0208 70E0      		ldi r23,hi8(.LC6)
+ 465 020a 00C0      		rjmp .L34
+ 466               	.L19:
+ 170:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 171:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 172:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 173:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         case 15:                                 //  1 1 1 1
+ 174:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             countNoLine = 0;
+ 468               	.LM59:
+ 469 020c 1092 0000 		sts countNoLine+1,__zero_reg__
+ 470 0210 1092 0000 		sts countNoLine,__zero_reg__
+ 175:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outLeftSide = 0;
+ 472               	.LM60:
+ 473 0214 1092 0000 		sts outLeftSide+1,__zero_reg__
+ 474 0218 1092 0000 		sts outLeftSide,__zero_reg__
+ 176:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             outRightSide = 0;
+ 476               	.LM61:
+ 477 021c 1092 0000 		sts outRightSide+1,__zero_reg__
+ 478 0220 1092 0000 		sts outRightSide,__zero_reg__
+ 177:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 178:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             //stop();
+ 179:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 480               	.LM62:
+ 481 0224 0895      		ret
+ 482               	.L2:
+ 180:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 181:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             
+ 182:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****         default:
+ 183:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             sendUartToInterface('H', "HUH?!");
+ 484               	.LM63:
+ 485 0226 60E0      		ldi r22,lo8(.LC7)
+ 486 0228 70E0      		ldi r23,hi8(.LC7)
+ 487               	.L34:
+ 488 022a 88E4      		ldi r24,lo8(72)
+ 489 022c 0C94 0000 		jmp sendUartToInterface
+ 491               	.Lscope1:
+ 493               	.global	getCountNoLine
+ 495               	getCountNoLine:
+ 184:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****             break;
+ 185:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****     }
+ 186:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** }
+ 187:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** 
+ 188:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** int getCountNoLine(void)
+ 189:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** {
+ 497               	.LM64:
+ 498               	.LFBB2:
+ 499               	/* prologue: function */
+ 500               	/* frame size = 0 */
+ 501               	/* stack size = 0 */
+ 502               	.L__stack_usage = 0
+ 190:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c ****     return countNoLine;
+ 504               	.LM65:
+ 505 0230 8091 0000 		lds r24,countNoLine
+ 506 0234 9091 0000 		lds r25,countNoLine+1
+ 191:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/lineStateMachine.c **** }
+ 508               	.LM66:
+ 509 0238 0895      		ret
+ 511               	.Lscope2:
+ 512               	.global	countNoLine
+ 513               		.section .bss
+ 516               	countNoLine:
+ 517 0000 0000      		.zero	2
+ 518               	.global	outRightSide
+ 521               	outRightSide:
+ 522 0002 0000      		.zero	2
+ 523               	.global	outLeftSide
+ 526               	outLeftSide:
+ 527 0004 0000      		.zero	2
+ 528               	.global	speed
+ 529               		.data
+ 532               	speed:
+ 533 0000 8C00      		.word	140
+ 534               		.comm	newDirection,2,1
+ 540               		.text
+ 542               	.Letext0:
+ 543               		.ident	"GCC: (GNU) 4.8.1"
+ 544               	.global __do_copy_data
+ 545               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 lineStateMachine.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:138    .text:00000000 lineStateMachine
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:516    .bss:00000000 countNoLine
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:521    .bss:00000002 outRightSide
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:526    .bss:00000004 outLeftSide
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:532    .data:00000000 speed
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccT77rgX.s:495    .text:00000230 getCountNoLine
+                            *COM*:00000002 newDirection
+
+UNDEFINED SYMBOLS
+__tablejump2__
+drive
+sendUartToInterface
+__do_copy_data
+__do_clear_bss

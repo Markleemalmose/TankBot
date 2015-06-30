@@ -40,7 +40,8 @@
 
 #include conf.mk
 # MCU name
-MCU = atmega2560
+MCU = atmega2561
+
 
 
 # Processor frequency.
@@ -48,12 +49,18 @@ MCU = atmega2560
 #     processor frequency. You can then use this symbol in your source code to 
 #     calculate timings. Do NOT tack on a 'UL' at the end, this will be done
 #     automatically to create a 32-bit value in your source code.
-F_CPU = 16000000
+F_CPU = 18432000
 
-AVRDUDE_PROGRAMMER = dragon_isp
+ AVRDUDE_PROGRAMMER = usbtiny
+# AVRDUDE_PROGRAMMER = stk500v2
+# AVRDUDE_PROGRAMMER = avrispmkII
+# AVRDUDE_PROGRAMMER = dragon_jtag
+# AVRDUDE_PROGRAMMER = arduino
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = /dev/cu.usbmodemfd121    # programmer connected to serial device
+# AVRDUDE_PORT = /dev/cu.usbmodemfd121    # programmer connected to serial device
+AVRDUDE_PORT = usb    # programmer connected to serial device
+
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex

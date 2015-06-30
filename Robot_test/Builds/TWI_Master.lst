@@ -1,0 +1,587 @@
+   1               		.file	"TWI_Master.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 106               	.global	TWI_Master_Initialise
+ 108               	TWI_Master_Initialise:
+   1:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /*****************************************************************************
+   2:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+   3:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Atmel Corporation
+   4:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+   5:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * File              : TWI_Master.c
+   6:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Compiler          : IAR EWAAVR 2.28a/3.10c
+   7:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Revision          : $Revision: 1.13 $
+   8:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Date              : $Date: 24. mai 2004 11:31:20 $
+   9:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Updated by        : $Author: ltwa $
+  10:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  11:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Support mail      : avr@atmel.com
+  12:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  13:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Supported devices : All devices with a TWI module can be used.
+  14:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *                     The example is written for the ATmega16
+  15:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  16:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * AppNote           : AVR315 - TWI Master Implementation
+  17:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  18:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** * Description       : This is a sample driver for the TWI hardware modules.
+  19:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *                     It is interrupt driveren. All functionality is controlled through 
+  20:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *                     passing information to and from functions. Se main.c for samples
+  21:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *                     of how to use the driver.
+  22:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  23:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** *
+  24:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+  25:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  26:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** //#include "ioavr.h"
+  27:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** //#include "inavr.h"
+  28:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** #include <avr/io.h>
+  29:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** #include "TWI_Master.h"
+  30:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  31:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** static unsigned char TWI_buf[ TWI_BUFFER_SIZE ];    // Transceiver buffer
+  32:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** static unsigned char TWI_msgSize;                   // Number of bytes to be transmitted.
+  33:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** static unsigned char TWI_state = TWI_NO_STATE;      // State byte. Default set to TWI_NO_STATE.
+  34:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  35:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** union TWI_statusReg TWI_statusReg = {0};            // TWI_statusReg is defined in TWI_Master.h
+  36:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  37:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+  38:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to set up the TWI master to its initial standby state.
+  39:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Remember to enable interrupts from the main application after initializing the TWI.
+  40:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+  41:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** void TWI_Master_Initialise(void)
+  42:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 110               	.LM0:
+ 111               	.LFBB1:
+ 112               	/* prologue: function */
+ 113               	/* frame size = 0 */
+ 114               	/* stack size = 0 */
+ 115               	.L__stack_usage = 0
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWBR = TWI_TWBR;                                  // Set bit rate register (Baudrate). Defined in
+ 117               	.LM1:
+ 118 0000 8CE0      		ldi r24,lo8(12)
+ 119 0002 8093 B800 		sts 184,r24
+  44:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** // TWSR = TWI_TWPS;                                  // Not used. Driver presumes prescaler to be 0
+  45:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWDR = 0xFF;                                      // Default content = SDA released.
+ 121               	.LM2:
+ 122 0006 8FEF      		ldi r24,lo8(-1)
+ 123 0008 8093 BB00 		sts 187,r24
+  46:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWCR = (1<<TWEN)|                                 // Enable TWI-interface and release TWI pins.
+ 125               	.LM3:
+ 126 000c 84E0      		ldi r24,lo8(4)
+ 127 000e 8093 BC00 		sts 188,r24
+ 128 0012 0895      		ret
+ 130               	.Lscope1:
+ 132               	.global	TWI_Transceiver_Busy
+ 134               	TWI_Transceiver_Busy:
+  47:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWIE)|(0<<TWINT)|                      // Disable Interupt.
+  48:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // No Signal requests.
+  49:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWWC);                                 //
+  50:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }    
+  51:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     
+  52:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+  53:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to test if the TWI_ISR is busy transmitting.
+  54:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+  55:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** unsigned char TWI_Transceiver_Busy( void )
+  56:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 136               	.LM4:
+ 137               	.LFBB2:
+ 138               	/* prologue: function */
+ 139               	/* frame size = 0 */
+ 140               	/* stack size = 0 */
+ 141               	.L__stack_usage = 0
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWCR & (1<<TWIE) );                  // IF TWI Interrupt is enabled then the Transceiver
+ 143               	.LM5:
+ 144 0014 8091 BC00 		lds r24,188
+  58:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+ 146               	.LM6:
+ 147 0018 8170      		andi r24,lo8(1)
+ 148 001a 0895      		ret
+ 150               	.Lscope2:
+ 152               	.global	TWI_Get_State_Info
+ 154               	TWI_Get_State_Info:
+  59:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  60:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+  61:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to fetch the state information of the previous operation. The function will hold
+  62:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** until the TWI_ISR has completed with the previous operation. If there was an error, then the functi
+  63:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** will return the TWI State code. 
+  64:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+  65:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** unsigned char TWI_Get_State_Info( void )
+  66:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 156               	.LM7:
+ 157               	.LFBB3:
+ 158               	/* prologue: function */
+ 159               	/* frame size = 0 */
+ 160               	/* stack size = 0 */
+ 161               	.L__stack_usage = 0
+ 162               	.L5:
+ 163               	.LBB10:
+ 164               	.LBB11:
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWCR & (1<<TWIE) );                  // IF TWI Interrupt is enabled then the Transceiver
+ 166               	.LM8:
+ 167 001c 8091 BC00 		lds r24,188
+ 168               	.LBE11:
+ 169               	.LBE10:
+  67:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   while ( TWI_Transceiver_Busy() );             // Wait until TWI has completed the transmission.
+ 171               	.LM9:
+ 172 0020 80FD      		sbrc r24,0
+ 173 0022 00C0      		rjmp .L5
+  68:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWI_state );                         // Return error state.
+  69:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+ 175               	.LM10:
+ 176 0024 8091 0000 		lds r24,TWI_state
+ 177 0028 0895      		ret
+ 179               	.Lscope3:
+ 183               	.global	TWI_Start_Transceiver_With_Data
+ 185               	TWI_Start_Transceiver_With_Data:
+  70:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  71:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+  72:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to send a prepared message. The first byte must contain the slave address and th
+  73:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** read/write bit. Consecutive bytes contain the data to be sent, or empty locations for data to be re
+  74:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** from the slave. Also include how many bytes that should be sent/read including the address byte.
+  75:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** The function will hold execution (loop) until the TWI_ISR has completed with the previous operation
+  76:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** then initialize the next operation and return.
+  77:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+  78:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** void TWI_Start_Transceiver_With_Data( unsigned char *msg, unsigned char msgSize )
+  79:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 187               	.LM11:
+ 188               	.LFBB4:
+ 189               	/* prologue: function */
+ 190               	/* frame size = 0 */
+ 191               	/* stack size = 0 */
+ 192               	.L__stack_usage = 0
+ 193               	.L9:
+ 194               	.LBB12:
+ 195               	.LBB13:
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWCR & (1<<TWIE) );                  // IF TWI Interrupt is enabled then the Transceiver
+ 197               	.LM12:
+ 198 002a 2091 BC00 		lds r18,188
+ 199               	.LBE13:
+ 200               	.LBE12:
+  80:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   unsigned char temp;
+  81:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  82:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   while ( TWI_Transceiver_Busy() );             // Wait until TWI is ready for next transmission.
+ 202               	.LM13:
+ 203 002e 20FD      		sbrc r18,0
+ 204 0030 00C0      		rjmp .L9
+  83:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  84:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_msgSize = msgSize;                        // Number of data to transmit.
+ 206               	.LM14:
+ 207 0032 6093 0000 		sts TWI_msgSize,r22
+  85:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_buf[0]  = msg[0];                         // Store slave address with R/W setting.
+ 209               	.LM15:
+ 210 0036 FC01      		movw r30,r24
+ 211 0038 2081      		ld r18,Z
+ 212 003a 2093 0000 		sts TWI_buf,r18
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   if (!( msg[0] & (TRUE<<TWI_READ_BIT) ))       // If it is a write operation, then also copy data.
+ 214               	.LM16:
+ 215 003e 20FF      		sbrs r18,0
+ 216 0040 00C0      		rjmp .L10
+ 217               	.L13:
+  87:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   {
+  88:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     for ( temp = 1; temp < msgSize; temp++ )
+  89:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[ temp ] = msg[ temp ];
+  90:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   }
+  91:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_statusReg.all = 0;      
+ 219               	.LM17:
+ 220 0042 1092 0000 		sts TWI_statusReg,__zero_reg__
+  92:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_state         = TWI_NO_STATE ;
+ 222               	.LM18:
+ 223 0046 88EF      		ldi r24,lo8(-8)
+ 224 0048 8093 0000 		sts TWI_state,r24
+  93:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+ 226               	.LM19:
+ 227 004c 85EA      		ldi r24,lo8(-91)
+ 228 004e 8093 BC00 		sts 188,r24
+ 229 0052 0895      		ret
+ 230               	.L10:
+ 231 0054 DC01      		movw r26,r24
+ 232 0056 1196      		adiw r26,1
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   if (!( msg[0] & (TRUE<<TWI_READ_BIT) ))       // If it is a write operation, then also copy data.
+ 234               	.LM20:
+ 235 0058 E0E0      		ldi r30,lo8(TWI_buf+1)
+ 236 005a F0E0      		ldi r31,hi8(TWI_buf+1)
+ 237 005c 81E0      		ldi r24,lo8(1)
+ 238 005e 8E1B      		sub r24,r30
+ 239               	.L11:
+ 240 0060 982F      		mov r25,r24
+ 241 0062 9E0F      		add r25,r30
+  88:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     for ( temp = 1; temp < msgSize; temp++ )
+ 243               	.LM21:
+ 244 0064 9617      		cp r25,r22
+ 245 0066 00F4      		brsh .L13
+  89:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[ temp ] = msg[ temp ];
+ 247               	.LM22:
+ 248 0068 9D91      		ld r25,X+
+ 249 006a 9193      		st Z+,r25
+ 250 006c 00C0      		rjmp .L11
+ 252               	.Lscope4:
+ 254               	.global	TWI_Start_Transceiver
+ 256               	TWI_Start_Transceiver:
+  94:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+  95:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+  96:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWWC);                             //
+  97:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+  98:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+  99:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+ 100:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to resend the last message. The driver will reuse the data previously put in the
+ 101:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** The function will hold execution (loop) until the TWI_ISR has completed with the previous operation
+ 102:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** then initialize the next operation and return.
+ 103:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+ 104:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** void TWI_Start_Transceiver( void )
+ 105:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 258               	.LM23:
+ 259               	.LFBB5:
+ 260               	/* prologue: function */
+ 261               	/* frame size = 0 */
+ 262               	/* stack size = 0 */
+ 263               	.L__stack_usage = 0
+ 264               	.L17:
+ 265               	.LBB14:
+ 266               	.LBB15:
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWCR & (1<<TWIE) );                  // IF TWI Interrupt is enabled then the Transceiver
+ 268               	.LM24:
+ 269 006e 8091 BC00 		lds r24,188
+ 270               	.LBE15:
+ 271               	.LBE14:
+ 106:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   while ( TWI_Transceiver_Busy() );             // Wait until TWI is ready for next transmission.
+ 273               	.LM25:
+ 274 0072 80FD      		sbrc r24,0
+ 275 0074 00C0      		rjmp .L17
+ 107:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_statusReg.all = 0;      
+ 277               	.LM26:
+ 278 0076 1092 0000 		sts TWI_statusReg,__zero_reg__
+ 108:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWI_state         = TWI_NO_STATE ;
+ 280               	.LM27:
+ 281 007a 88EF      		ldi r24,lo8(-8)
+ 282 007c 8093 0000 		sts TWI_state,r24
+ 109:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   TWCR = (1<<TWEN)|                             // TWI Interface enabled.
+ 284               	.LM28:
+ 285 0080 85EA      		ldi r24,lo8(-91)
+ 286 0082 8093 BC00 		sts 188,r24
+ 287 0086 0895      		ret
+ 289               	.Lscope5:
+ 292               	.global	TWI_Get_Data_From_Transceiver
+ 294               	TWI_Get_Data_From_Transceiver:
+ 110:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (1<<TWIE)|(1<<TWINT)|                  // Enable TWI Interupt and clear the flag.
+ 111:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|       // Initiate a START condition.
+ 112:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****          (0<<TWWC);                             //
+ 113:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+ 114:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+ 115:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+ 116:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** Call this function to read out the requested data from the TWI transceiver buffer. I.e. first call
+ 117:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** TWI_Start_Transceiver to send a request for data to the slave. Then Run this function to collect th
+ 118:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** data when they have arrived. Include a pointer to where to place the data and the number of bytes
+ 119:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** requested (including the address field) in the function call. The function will hold execution (loo
+ 120:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** until the TWI_ISR has completed with the previous operation, before reading out the data and return
+ 121:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** If there was an error in the previous transmission the function will return the TWI error code.
+ 122:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+ 123:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** unsigned char TWI_Get_Data_From_Transceiver( unsigned char *msg, unsigned char msgSize )
+ 124:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 296               	.LM29:
+ 297               	.LFBB6:
+ 298               	/* prologue: function */
+ 299               	/* frame size = 0 */
+ 300               	/* stack size = 0 */
+ 301               	.L__stack_usage = 0
+ 302               	.L20:
+ 303               	.LBB16:
+ 304               	.LBB17:
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return ( TWCR & (1<<TWIE) );                  // IF TWI Interrupt is enabled then the Transceiver
+ 306               	.LM30:
+ 307 0088 2091 BC00 		lds r18,188
+ 308               	.LBE17:
+ 309               	.LBE16:
+ 125:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   unsigned char i;
+ 126:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+ 127:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   while ( TWI_Transceiver_Busy() );             // Wait until TWI is ready for next transmission.
+ 311               	.LM31:
+ 312 008c 20FD      		sbrc r18,0
+ 313 008e 00C0      		rjmp .L20
+ 128:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+ 129:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   if( TWI_statusReg.lastTransOK )               // Last transmission competed successfully.        
+ 315               	.LM32:
+ 316 0090 2091 0000 		lds r18,TWI_statusReg
+ 317 0094 20FD      		sbrc r18,0
+ 318 0096 00C0      		rjmp .L21
+ 319               	.L24:
+ 130:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   {                                             
+ 131:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     for ( i=0; i<msgSize; i++ )                 // Copy data from Transceiver buffer.
+ 132:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     {
+ 133:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       msg[ i ] = TWI_buf[ i ];
+ 134:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     }
+ 135:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   }
+ 136:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   return( TWI_statusReg.lastTransOK );                                   
+ 321               	.LM33:
+ 322 0098 8091 0000 		lds r24,TWI_statusReg
+ 323 009c 8170      		andi r24,1
+ 324 009e 0895      		ret
+ 325               	.L21:
+ 326 00a0 20E0      		ldi r18,lo8(TWI_buf)
+ 327 00a2 30E0      		ldi r19,hi8(TWI_buf)
+ 328 00a4 FC01      		movw r30,r24
+ 129:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   if( TWI_statusReg.lastTransOK )               // Last transmission competed successfully.        
+ 330               	.LM34:
+ 331 00a6 D901      		movw r26,r18
+ 332               	.L22:
+ 333 00a8 8A2F      		mov r24,r26
+ 334 00aa 821B      		sub r24,r18
+ 131:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     for ( i=0; i<msgSize; i++ )                 // Copy data from Transceiver buffer.
+ 336               	.LM35:
+ 337 00ac 8617      		cp r24,r22
+ 338 00ae 00F4      		brsh .L24
+ 133:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       msg[ i ] = TWI_buf[ i ];
+ 340               	.LM36:
+ 341 00b0 8D91      		ld r24,X+
+ 342 00b2 8193      		st Z+,r24
+ 343 00b4 00C0      		rjmp .L22
+ 345               	.Lscope6:
+ 348               	.global	ISR
+ 350               	ISR:
+ 137:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+ 138:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** 
+ 139:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** // ********** Interrupt Handlers ********** //
+ 140:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** /****************************************************************************
+ 141:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** This function is the Interrupt Service Routine (ISR), and called when the TWI interrupt is triggere
+ 142:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** that is whenever a TWI event has occurred. This function should not be called directly from the mai
+ 143:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** application.
+ 144:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ****************************************************************************/
+ 145:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** //#pragma vector=TWI_vect
+ 146:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** ISR(TWI_vect)
+ 147:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** {
+ 352               	.LM37:
+ 353               	.LFBB7:
+ 354               	/* prologue: function */
+ 355               	/* frame size = 0 */
+ 356               	/* stack size = 0 */
+ 357               	.L__stack_usage = 0
+ 148:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   static unsigned char TWI_bufPtr;
+ 149:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   switch (TWSR)
+ 359               	.LM38:
+ 360 00b6 8091 B900 		lds r24,185
+ 361 00ba 8832      		cpi r24,lo8(40)
+ 362 00bc 01F0      		breq .L28
+ 363 00be 00F4      		brsh .L29
+ 364 00c0 8031      		cpi r24,lo8(16)
+ 365 00c2 01F0      		breq .L30
+ 366 00c4 8831      		cpi r24,lo8(24)
+ 367 00c6 01F0      		breq .L28
+ 368 00c8 8830      		cpi r24,lo8(8)
+ 369 00ca 01F0      		breq .+2
+ 370 00cc 00C0      		rjmp .L27
+ 371 00ce 00C0      		rjmp .L30
+ 372               	.L29:
+ 373 00d0 8034      		cpi r24,lo8(64)
+ 374 00d2 01F0      		breq .L31
+ 375 00d4 00F4      		brsh .L32
+ 376 00d6 8833      		cpi r24,lo8(56)
+ 377 00d8 01F0      		breq .+2
+ 378 00da 00C0      		rjmp .L27
+ 151:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   {
+ 152:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_START:             // START has been transmitted  
+ 153:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_REP_START:         // Repeated START has been transmitted
+ 154:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_bufPtr = 0;                                     // Set buffer pointer to the TWI Address 
+ 155:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MTX_ADR_ACK:       // SLA+W has been tramsmitted and ACK received
+ 156:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MTX_DATA_ACK:      // Data byte has been tramsmitted and ACK received
+ 157:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       if (TWI_bufPtr < TWI_msgSize)
+ 158:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       {
+ 159:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWDR = TWI_buf[TWI_bufPtr++];
+ 160:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 161:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag
+ 162:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           //
+ 163:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWWC);                                 //  
+ 164:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       }else                    // Send STOP after last byte
+ 165:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       {
+ 166:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWI_statusReg.lastTransOK = TRUE;                 // Set status bits to completed successfu
+ 167:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 168:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWIE)|(1<<TWINT)|                      // Disable TWI Interrupt and clear the fl
+ 169:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|           // Initiate a STOP condition.
+ 170:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWWC);                                 //
+ 171:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       }
+ 172:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       break;
+ 173:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MRX_DATA_ACK:      // Data byte has been received and ACK tramsmitted
+ 174:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[TWI_bufPtr++] = TWDR;
+ 175:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MRX_ADR_ACK:       // SLA+R has been tramsmitted and ACK received
+ 176:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       if (TWI_bufPtr < (TWI_msgSize-1) )                  // Detect the last byte to NACK it.
+ 177:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       {
+ 178:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 179:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag
+ 180:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // Send ACK after reception
+ 181:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWWC);                                 //  
+ 182:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       }else                    // Send NACK after next reception
+ 183:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       {
+ 184:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 185:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag
+ 186:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // Send NACK after reception
+ 187:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                (0<<TWWC);                                 // 
+ 188:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       }    
+ 189:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       break; 
+ 190:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MRX_DATA_NACK:     // Data byte has been received and NACK tramsmitted
+ 191:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[TWI_bufPtr] = TWDR;
+ 192:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_statusReg.lastTransOK = TRUE;                 // Set status bits to completed successfull
+ 193:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 194:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWIE)|(1<<TWINT)|                      // Disable TWI Interrupt and clear the flag
+ 195:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|           // Initiate a STOP condition.
+ 196:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWWC);                                 //
+ 197:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       break;      
+ 198:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_ARB_LOST:          // Arbitration lost
+ 199:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 380               	.LM39:
+ 381 00dc 85EA      		ldi r24,lo8(-91)
+ 382 00de 00C0      		rjmp .L55
+ 383               	.L32:
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   switch (TWSR)
+ 385               	.LM40:
+ 386 00e0 8035      		cpi r24,lo8(80)
+ 387 00e2 01F0      		breq .L34
+ 388 00e4 8835      		cpi r24,lo8(88)
+ 389 00e6 01F0      		breq .+2
+ 390 00e8 00C0      		rjmp .L27
+ 191:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[TWI_bufPtr] = TWDR;
+ 392               	.LM41:
+ 393 00ea 8091 BB00 		lds r24,187
+ 394 00ee E091 0000 		lds r30,TWI_bufPtr.1533
+ 395 00f2 F0E0      		ldi r31,0
+ 396 00f4 E050      		subi r30,lo8(-(TWI_buf))
+ 397 00f6 F040      		sbci r31,hi8(-(TWI_buf))
+ 398 00f8 8083      		st Z,r24
+ 399 00fa 00C0      		rjmp .L56
+ 400               	.L30:
+ 154:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_bufPtr = 0;                                     // Set buffer pointer to the TWI Address 
+ 402               	.LM42:
+ 403 00fc 1092 0000 		sts TWI_bufPtr.1533,__zero_reg__
+ 404               	.L28:
+ 157:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       if (TWI_bufPtr < TWI_msgSize)
+ 406               	.LM43:
+ 407 0100 E091 0000 		lds r30,TWI_bufPtr.1533
+ 408 0104 8091 0000 		lds r24,TWI_msgSize
+ 409 0108 E817      		cp r30,r24
+ 410 010a 00F4      		brsh .L56
+ 159:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWDR = TWI_buf[TWI_bufPtr++];
+ 412               	.LM44:
+ 413 010c 81E0      		ldi r24,lo8(1)
+ 414 010e 8E0F      		add r24,r30
+ 415 0110 8093 0000 		sts TWI_bufPtr.1533,r24
+ 416 0114 F0E0      		ldi r31,0
+ 417 0116 E050      		subi r30,lo8(-(TWI_buf))
+ 418 0118 F040      		sbci r31,hi8(-(TWI_buf))
+ 419 011a 8081      		ld r24,Z
+ 420 011c 8093 BB00 		sts 187,r24
+ 421 0120 00C0      		rjmp .L38
+ 422               	.L34:
+ 174:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_buf[TWI_bufPtr++] = TWDR;
+ 424               	.LM45:
+ 425 0122 E091 0000 		lds r30,TWI_bufPtr.1533
+ 426 0126 81E0      		ldi r24,lo8(1)
+ 427 0128 8E0F      		add r24,r30
+ 428 012a 8093 0000 		sts TWI_bufPtr.1533,r24
+ 429 012e 8091 BB00 		lds r24,187
+ 430 0132 F0E0      		ldi r31,0
+ 431 0134 E050      		subi r30,lo8(-(TWI_buf))
+ 432 0136 F040      		sbci r31,hi8(-(TWI_buf))
+ 433 0138 8083      		st Z,r24
+ 434               	.L31:
+ 176:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       if (TWI_bufPtr < (TWI_msgSize-1) )                  // Detect the last byte to NACK it.
+ 436               	.LM46:
+ 437 013a 2091 0000 		lds r18,TWI_bufPtr.1533
+ 438 013e 30E0      		ldi r19,0
+ 439 0140 8091 0000 		lds r24,TWI_msgSize
+ 440 0144 90E0      		ldi r25,0
+ 441 0146 0197      		sbiw r24,1
+ 442 0148 2817      		cp r18,r24
+ 443 014a 3907      		cpc r19,r25
+ 444 014c 04F4      		brge .L38
+ 178:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 446               	.LM47:
+ 447 014e 85EC      		ldi r24,lo8(-59)
+ 448 0150 00C0      		rjmp .L55
+ 449               	.L38:
+ 184:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****         TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 451               	.LM48:
+ 452 0152 85E8      		ldi r24,lo8(-123)
+ 453 0154 00C0      		rjmp .L55
+ 454               	.L56:
+ 192:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_statusReg.lastTransOK = TRUE;                 // Set status bits to completed successfull
+ 456               	.LM49:
+ 457 0156 8091 0000 		lds r24,TWI_statusReg
+ 458 015a 8160      		ori r24,lo8(1<<0)
+ 459 015c 8093 0000 		sts TWI_statusReg,r24
+ 193:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWCR = (1<<TWEN)|                                 // TWI Interface enabled
+ 461               	.LM50:
+ 462 0160 84E9      		ldi r24,lo8(-108)
+ 463               	.L55:
+ 465               	.LM51:
+ 466 0162 8093 BC00 		sts 188,r24
+ 200:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (1<<TWIE)|(1<<TWINT)|                      // Enable TWI Interupt and clear the flag
+ 201:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWEA)|(1<<TWSTA)|(0<<TWSTO)|           // Initiate a (RE)START condition.
+ 202:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWWC);                                 //
+ 203:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       break;
+ 468               	.LM52:
+ 469 0166 0895      		ret
+ 470               	.L27:
+ 204:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MTX_ADR_NACK:      // SLA+W has been tramsmitted and NACK received
+ 205:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MRX_ADR_NACK:      // SLA+R has been tramsmitted and NACK received    
+ 206:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_MTX_DATA_NACK:     // Data byte has been tramsmitted and NACK received
+ 207:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** //    case TWI_NO_STATE              // No relevant state information available; TWINT = “0”
+ 208:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     case TWI_BUS_ERROR:         // Bus error due to an illegal START or STOP condition
+ 209:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****     default:     
+ 210:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWI_state = TWSR;                                 // Store TWSR and automatically sets clears
+ 472               	.LM53:
+ 473 0168 8091 B900 		lds r24,185
+ 474 016c 8093 0000 		sts TWI_state,r24
+ 211:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****                                                         // Reset TWI Interface
+ 212:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****       TWCR = (1<<TWEN)|                                 // Enable TWI-interface and release TWI pin
+ 476               	.LM54:
+ 477 0170 84E0      		ldi r24,lo8(4)
+ 478 0172 8093 BC00 		sts 188,r24
+ 213:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWIE)|(0<<TWINT)|                      // Disable Interupt
+ 214:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|           // No Signal requests
+ 215:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****              (0<<TWWC);                                 //
+ 216:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c ****   }
+ 217:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/TWI_Master.c **** }
+ 480               	.LM55:
+ 481 0176 0895      		ret
+ 486               	.Lscope7:
+ 487               		.local	TWI_bufPtr.1533
+ 488               		.comm	TWI_bufPtr.1533,1,1
+ 489               	.global	TWI_statusReg
+ 490               		.section .bss
+ 493               	TWI_statusReg:
+ 494 0000 00        		.zero	1
+ 495               		.data
+ 498               	TWI_state:
+ 499 0000 F8        		.byte	-8
+ 500               		.local	TWI_msgSize
+ 501               		.comm	TWI_msgSize,1,1
+ 502               		.local	TWI_buf
+ 503               		.comm	TWI_buf,4,1
+ 508               		.text
+ 510               	.Letext0:
+ 511               		.ident	"GCC: (GNU) 4.8.1"
+ 512               	.global __do_copy_data
+ 513               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 TWI_Master.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:108    .text:00000000 TWI_Master_Initialise
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:134    .text:00000014 TWI_Transceiver_Busy
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:154    .text:0000001c TWI_Get_State_Info
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:498    .data:00000000 TWI_state
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:185    .text:0000002a TWI_Start_Transceiver_With_Data
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:488    .bss:00000002 TWI_msgSize
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:501    .bss:00000003 TWI_buf
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:493    .bss:00000000 TWI_statusReg
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:256    .text:0000006e TWI_Start_Transceiver
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:294    .text:00000088 TWI_Get_Data_From_Transceiver
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccyZUTM4.s:350    .text:000000b6 ISR
+                             .bss:00000001 TWI_bufPtr.1533
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

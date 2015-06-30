@@ -7,14 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F4349EC01AC6CACA00A54FF4 /* mainStateMachine.c in Sources */ = {isa = PBXBuildFile; fileRef = F4349EBE1AC6CACA00A54FF4 /* mainStateMachine.c */; };
+		F475EF171ABC5375006043B2 /* lineStateMachine.c in Sources */ = {isa = PBXBuildFile; fileRef = F475EF151ABC5375006043B2 /* lineStateMachine.c */; };
 		F4A535AC1A83AFAA000C5C20 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F4A535AB1A83AFAA000C5C20 /* main.c */; };
 		F4A535AF1A83AFAA000C5C20 /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = F4A535AE1A83AFAA000C5C20 /* Makefile */; };
+		F4AB05EB1B09F01C0078BCFD /* UART1.c in Sources */ = {isa = PBXBuildFile; fileRef = F4AB05E91B09F01C0078BCFD /* UART1.c */; };
+		F4C832D11AB7206500508DE1 /* ADC.c in Sources */ = {isa = PBXBuildFile; fileRef = F4C832CF1AB7206500508DE1 /* ADC.c */; };
+		F4C883A91AA211E400932516 /* LineSensors.c in Sources */ = {isa = PBXBuildFile; fileRef = F4C883A71AA211E400932516 /* LineSensors.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F4349EBE1AC6CACA00A54FF4 /* mainStateMachine.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mainStateMachine.c; sourceTree = "<group>"; };
+		F4349EBF1AC6CACA00A54FF4 /* mainStateMachine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mainStateMachine.h; sourceTree = "<group>"; };
+		F45EFC751AC04E1E00FF5BE9 /* MotorController.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = MotorController.c; sourceTree = "<group>"; };
+		F45EFC761AC04E1E00FF5BE9 /* MotorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MotorController.h; sourceTree = "<group>"; };
+		F475EF151ABC5375006043B2 /* lineStateMachine.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lineStateMachine.c; sourceTree = "<group>"; };
+		F475EF161ABC5375006043B2 /* lineStateMachine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lineStateMachine.h; sourceTree = "<group>"; };
 		F4A535A81A83AFAA000C5C20 /* Index */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Index; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4A535AB1A83AFAA000C5C20 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		F4A535AE1A83AFAA000C5C20 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		F4AB05E91B09F01C0078BCFD /* UART1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = UART1.c; sourceTree = "<group>"; };
+		F4AB05EA1B09F01C0078BCFD /* UART1.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UART1.h; sourceTree = "<group>"; };
+		F4C832CF1AB7206500508DE1 /* ADC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ADC.c; sourceTree = "<group>"; };
+		F4C832D01AB7206500508DE1 /* ADC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ADC.h; sourceTree = "<group>"; };
+		F4C883981A9A557A00932516 /* HC-SR04.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = "HC-SR04.c"; sourceTree = "<group>"; };
+		F4C883991A9A557A00932516 /* HC-SR04.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "HC-SR04.h"; sourceTree = "<group>"; };
+		F4C883A71AA211E400932516 /* LineSensors.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = LineSensors.c; sourceTree = "<group>"; };
+		F4C883A81AA211E400932516 /* LineSensors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LineSensors.h; sourceTree = "<group>"; };
+		F4F0081F1AA89133004557AE /* UART.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = UART.c; sourceTree = "<group>"; };
+		F4F008201AA89133004557AE /* UART.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UART.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -37,7 +58,23 @@
 		F4A535AA1A83AFAA000C5C20 /* Robot_test */ = {
 			isa = PBXGroup;
 			children = (
+				F45EFC751AC04E1E00FF5BE9 /* MotorController.c */,
+				F45EFC761AC04E1E00FF5BE9 /* MotorController.h */,
+				F4F0081F1AA89133004557AE /* UART.c */,
+				F4F008201AA89133004557AE /* UART.h */,
+				F4AB05E91B09F01C0078BCFD /* UART1.c */,
+				F4AB05EA1B09F01C0078BCFD /* UART1.h */,
+				F4C883981A9A557A00932516 /* HC-SR04.c */,
+				F4C883991A9A557A00932516 /* HC-SR04.h */,
 				F4A535AB1A83AFAA000C5C20 /* main.c */,
+				F4349EBE1AC6CACA00A54FF4 /* mainStateMachine.c */,
+				F4349EBF1AC6CACA00A54FF4 /* mainStateMachine.h */,
+				F475EF151ABC5375006043B2 /* lineStateMachine.c */,
+				F475EF161ABC5375006043B2 /* lineStateMachine.h */,
+				F4C883A71AA211E400932516 /* LineSensors.c */,
+				F4C883A81AA211E400932516 /* LineSensors.h */,
+				F4C832CF1AB7206500508DE1 /* ADC.c */,
+				F4C832D01AB7206500508DE1 /* ADC.h */,
 				F4A535AD1A83AFAA000C5C20 /* Makefiles */,
 			);
 			path = Robot_test;
@@ -177,7 +214,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4A535AF1A83AFAA000C5C20 /* Makefile in Sources */,
+				F4C883A91AA211E400932516 /* LineSensors.c in Sources */,
 				F4A535AC1A83AFAA000C5C20 /* main.c in Sources */,
+				F475EF171ABC5375006043B2 /* lineStateMachine.c in Sources */,
+				F4AB05EB1B09F01C0078BCFD /* UART1.c in Sources */,
+				F4349EC01AC6CACA00A54FF4 /* mainStateMachine.c in Sources */,
+				F4C832D11AB7206500508DE1 /* ADC.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -353,6 +395,7 @@
 				F4A535B41A83AFAA000C5C20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F4A535B51A83AFAA000C5C20 /* Build configuration list for PBXLegacyTarget "Build" */ = {
 			isa = XCConfigurationList;
@@ -361,6 +404,7 @@
 				F4A535B71A83AFAA000C5C20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F4A535B81A83AFAA000C5C20 /* Build configuration list for PBXLegacyTarget "Upload" */ = {
 			isa = XCConfigurationList;
@@ -369,6 +413,7 @@
 				F4A535BA1A83AFAA000C5C20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F4A535BB1A83AFAA000C5C20 /* Build configuration list for PBXLegacyTarget "Clean" */ = {
 			isa = XCConfigurationList;
@@ -377,6 +422,7 @@
 				F4A535BD1A83AFAA000C5C20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		F4A535BE1A83AFAA000C5C20 /* Build configuration list for PBXNativeTarget "Index" */ = {
 			isa = XCConfigurationList;
@@ -385,6 +431,7 @@
 				F4A535C01A83AFAA000C5C20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

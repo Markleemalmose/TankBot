@@ -1,0 +1,1159 @@
+Archive member included because of file (symbol)
+
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+                              Builds/mainStateMachine.o (__divsf3)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o) (__divsf3x)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+                              Builds/mainStateMachine.o (__fixsfsi)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o) (__fixunssfsi)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+                              Builds/mainStateMachine.o (__floatsisf)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o) (__fp_inf)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o) (__fp_nan)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o) (__fp_pscA)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o) (__fp_pscB)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o) (__fp_round)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o) (__fp_split3)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o) (__fp_zero)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+                              Builds/UART.o (__udivmodsi4)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o (exit)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+                              Builds/lineStateMachine.o (__tablejump2__)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+                              Builds/LineSensors.o (__do_copy_data)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+                              Builds/HC-SR04.o (__do_clear_bss)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+                              Builds/main.o (atoi)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+                              Builds/main.o (strncpy)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+                              Builds/LineSensors.o (__itoa_ncheck)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o) (__mulhi_const_10)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o) (__utoa_common)
+/usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o) (strrev)
+
+Allocating common symbols
+Common symbol       size              file
+
+RX1data             0x14              Builds/main.o
+lineToChar          0x2               Builds/mainStateMachine.o
+temp2               0x4               Builds/MotorController.o
+RX0_array           0x3c              Builds/main.o
+DistanceSideToChar  0x2               Builds/mainStateMachine.o
+temp                0x1               Builds/main.o
+temp5               0x4               Builds/MotorController.o
+temp8               0x4               Builds/MotorController.o
+errorDiffRight      0x2               Builds/MotorController.o
+temp6               0x4               Builds/MotorController.o
+temp1               0x4               Builds/MotorController.o
+adc1                0x4               Builds/LineSensors.o
+buffer              0x14              Builds/main.o
+temp4               0x4               Builds/MotorController.o
+DistanceFrontToChar
+                    0x2               Builds/mainStateMachine.o
+temp7               0x4               Builds/MotorController.o
+noLineChar          0x4               Builds/mainStateMachine.o
+adc2                0x4               Builds/LineSensors.o
+turn90degreesLeft   0x2               Builds/MotorController.o
+errorDiffLeft       0x2               Builds/MotorController.o
+turn90degreesRight  0x2               Builds/MotorController.o
+newDirection        0x2               Builds/MotorController.o
+IValue              0x2               Builds/MotorController.o
+temp3               0x4               Builds/MotorController.o
+adc4                0x4               Builds/LineSensors.o
+adc3                0x4               Builds/LineSensors.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00100000         xr
+data             0x00800200         0x0000fe00         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+user_signatures  0x00850000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800200
+LOAD /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+LOAD Builds/ADC.o
+LOAD Builds/HC-SR04.o
+LOAD Builds/LineSensors.o
+LOAD Builds/MotorController.o
+LOAD Builds/UART.o
+LOAD Builds/UART1.o
+LOAD Builds/lineStateMachine.o
+LOAD Builds/main.o
+LOAD Builds/mainStateMachine.o
+LOAD /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a
+START GROUP
+LOAD /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a
+LOAD /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a
+LOAD /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a
+END GROUP
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0x228c
+ *(.vectors)
+ .vectors       0x00000000       0xcc /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+                0x00000000                __vectors
+                0x00000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ .progmem.gcc_sw_table
+                0x000000cc       0x20 Builds/lineStateMachine.o
+ .progmem.gcc_sw_table
+                0x000000ec       0x10 Builds/mainStateMachine.o
+                0x000000fc                . = ALIGN (0x2)
+                0x000000fc                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x000000fc       0x58 linker stubs
+ *(.trampolines*)
+                0x00000154                __trampolines_end = .
+ *(.progmem*)
+                0x00000154                . = ALIGN (0x2)
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x00000154                __ctors_start = .
+ *(.ctors)
+                0x00000154                __ctors_end = .
+                0x00000154                __dtors_start = .
+ *(.dtors)
+                0x00000154                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x00000154        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+                0x00000154                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x00000154       0x10 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+ *(.init2)
+ *(.init3)
+ .init3         0x00000164       0x12 Builds/main.o
+                0x00000164                wdt_init
+ *(.init3)
+ *(.init4)
+ .init4         0x00000176       0x1a /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+                0x00000176                __do_copy_data
+ .init4         0x00000190       0x10 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+                0x00000190                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x000001a0        0x8 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+ *(.init9)
+ *(.text)
+ .text          0x000001a8        0x4 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+                0x000001a8                __vector_42
+                0x000001a8                __vector_22
+                0x000001a8                __vector_28
+                0x000001a8                __vector_1
+                0x000001a8                __vector_34
+                0x000001a8                __vector_24
+                0x000001a8                __vector_12
+                0x000001a8                __vector_46
+                0x000001a8                __bad_interrupt
+                0x000001a8                __vector_31
+                0x000001a8                __vector_35
+                0x000001a8                __vector_39
+                0x000001a8                __vector_3
+                0x000001a8                __vector_23
+                0x000001a8                __vector_30
+                0x000001a8                __vector_45
+                0x000001a8                __vector_11
+                0x000001a8                __vector_13
+                0x000001a8                __vector_17
+                0x000001a8                __vector_19
+                0x000001a8                __vector_49
+                0x000001a8                __vector_41
+                0x000001a8                __vector_43
+                0x000001a8                __vector_27
+                0x000001a8                __vector_33
+                0x000001a8                __vector_47
+                0x000001a8                __vector_37
+                0x000001a8                __vector_4
+                0x000001a8                __vector_44
+                0x000001a8                __vector_2
+                0x000001a8                __vector_15
+                0x000001a8                __vector_29
+                0x000001a8                __vector_40
+                0x000001a8                __vector_26
+                0x000001a8                __vector_48
+                0x000001a8                __vector_14
+                0x000001a8                __vector_10
+                0x000001a8                __vector_50
+                0x000001a8                __vector_16
+                0x000001a8                __vector_18
+                0x000001a8                __vector_20
+                0x000001a8                __vector_38
+ .text          0x000001ac       0x22 Builds/ADC.o
+                0x000001ac                init_ADC
+ .text          0x000001ce      0x1da Builds/HC-SR04.o
+                0x000001ce                HCSR04_init
+                0x000001d8                timer_start
+                0x00000202                timer_stop
+                0x00000208                send_pulse
+                0x0000029a                HCSR04_get_distance_cm
+                0x000002fa                __vector_32
+                0x00000330                __vector_9
+ .text          0x000003a8      0x19e Builds/LineSensors.o
+                0x000003a8                LineSensors_init
+                0x000003b0                convert
+                0x000003d0                LineSensors_check_line
+                0x0000050e                LineSensors_check_all
+                0x0000053e                LineSensors_value
+ .text          0x00000546      0x61e Builds/MotorController.o
+                0x00000546                motor_init
+                0x0000057c                motor_timer_init
+                0x000005b4                __vector_5
+                0x00000600                __vector_6
+                0x0000064c                __vector_7
+                0x00000698                __vector_8
+                0x000006e4                __vector_21
+                0x0000073a                forwardMotorLeft
+                0x00000740                forwardMotorRight
+                0x00000746                backwardsMotorLeft
+                0x0000074c                backwardsMotorRight
+                0x00000752                drive
+                0x00000b1a                stop
+ .text          0x00000b64       0x58 Builds/UART.o
+                0x00000b64                init_uart
+                0x00000b96                uart_putc
+                0x00000ba4                uart_puts
+ .text          0x00000bbc       0x58 Builds/UART1.o
+                0x00000bbc                init_uart1
+                0x00000bee                uart1_putc
+                0x00000bfc                uart1_puts
+ .text          0x00000c14      0x23a Builds/lineStateMachine.o
+                0x00000c14                lineStateMachine
+                0x00000e44                getCountNoLine
+ .text          0x00000e4e      0x1e0 Builds/main.o
+                0x00000e4e                init
+                0x00000e88                rxData
+                0x00000f42                __vector_25
+                0x00000f92                __vector_36
+ .text          0x0000102e      0xeac Builds/mainStateMachine.o
+                0x0000102e                sendUartToInterface
+                0x0000104a                sendDistanceToInterface
+                0x00001112                sendLineToInterface
+                0x00001152                stopTimeMs
+                0x0000117a                followLine
+                0x000011b4                driveDistanceEncoder
+                0x0000120c                driveDistanceInCM
+                0x0000123e                turnDegreesGyro
+                0x0000131a                turn90degreesEncoder
+                0x00001392                turnSomeDegreesEncoder
+                0x00001414                turnToLine
+                0x000014b2                findLine
+                0x0000152c                octagon
+                0x000017dc                fullCircle
+                0x00001932                followWall
+                0x000019c4                followWallStateMachine
+                0x00001b96                mainState
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+ .text          0x00001eda        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+                0x00001eda                . = ALIGN (0x2)
+ *(.text.*)
+ .text.startup  0x00001eda       0x3c Builds/main.o
+                0x00001eda                main
+ .text.avr-libc.fplib
+                0x00001f16        0x4 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+                0x00001f16                __divsf3
+ .text.avr-libc.fplib
+                0x00001f1a       0xcc /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+                0x00001f30                __divsf3x
+                0x00001f34                __divsf3_pse
+ .text.avr-libc.fplib
+                0x00001fe6        0xa /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+                0x00001fe6                __fixsfsi
+ .text.avr-libc.fplib
+                0x00001ff0       0x58 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+                0x00001ff0                __fixunssfsi
+ .text.avr-libc.fplib
+                0x00002048       0x7a /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+                0x00002048                __floatunsisf
+                0x0000204c                __floatsisf
+ .text.avr-libc.fplib
+                0x000020c2        0xc /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+                0x000020c2                __fp_inf
+ .text.avr-libc.fplib
+                0x000020ce        0x6 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+                0x000020ce                __fp_nan
+ .text.avr-libc.fplib
+                0x000020d4        0xe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+                0x000020d4                __fp_pscA
+ .text.avr-libc.fplib
+                0x000020e2        0xe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+                0x000020e2                __fp_pscB
+ .text.avr-libc.fplib
+                0x000020f0       0x22 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+                0x000020f0                __fp_round
+ .text.avr-libc.fplib
+                0x00002112       0x44 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+                0x00002112                __fp_split3
+                0x00002122                __fp_splitA
+ .text.avr-libc.fplib
+                0x00002156        0xe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+                0x00002156                __fp_zero
+                0x00002158                __fp_szero
+ .text.libgcc.mul
+                0x00002164        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.div
+                0x00002164       0x44 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+                0x00002164                __udivmodsi4
+ .text.libgcc   0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.prologue
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.builtins
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.fmul
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.fixed
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .text.libgcc.mul
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.div
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc   0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.prologue
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.builtins
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.fmul
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.fixed
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .text.libgcc.mul
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc.div
+                0x000021a8        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc   0x000021a8        0xc /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+                0x000021a8                __tablejump2__
+                0x000021ac                __tablejump__
+ .text.libgcc.prologue
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc.builtins
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc.fmul
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc.fixed
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .text.libgcc.mul
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.div
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc   0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.prologue
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.builtins
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.fmul
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.fixed
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .text.libgcc.mul
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc.div
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc.prologue
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc.builtins
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc.fmul
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.libgcc.fixed
+                0x000021b4        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .text.avr-libc
+                0x000021b4       0x3c /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+                0x000021b4                atoi
+ .text.avr-libc
+                0x000021f0       0x1e /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+                0x000021f0                strncpy
+ .text.avr-libc
+                0x0000220e       0x16 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+                0x0000220e                __itoa_ncheck
+ .text.avr-libc
+                0x00002224       0x10 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+                0x00002224                __mulhi_const_10
+ .text.avr-libc
+                0x00002234       0x34 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+                0x00002234                __utoa_ncheck
+                0x00002236                __utoa_common
+ .text.avr-libc
+                0x00002268       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+                0x00002268                strrev
+                0x00002288                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x00002288        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+                0x00002288                exit
+                0x00002288                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x00002288        0x4 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ *(.fini0)
+                0x0000228c                _etext = .
+
+.data           0x00800200      0x304 load address 0x0000228c
+                0x00800200                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800200        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+ .data          0x00800200        0x0 Builds/ADC.o
+ .data          0x00800200        0x0 Builds/HC-SR04.o
+ .data          0x00800200        0x0 Builds/LineSensors.o
+ .data          0x00800200        0x6 Builds/MotorController.o
+                0x00800202                pwmMax
+                0x00800204                speedReference
+ .data          0x00800206        0x0 Builds/UART.o
+ .data          0x00800206        0x0 Builds/UART1.o
+ .data          0x00800206        0x2 Builds/lineStateMachine.o
+                0x00800206                speed
+ .data          0x00800208        0x0 Builds/main.o
+ .data          0x00800208        0x0 Builds/mainStateMachine.o
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+ .data          0x00800208        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ .rodata.str1.1
+                0x00800208        0x5 Builds/LineSensors.o
+                                  0x8 (size before relaxing)
+ .rodata.str1.1
+                0x0080020d       0xb7 Builds/lineStateMachine.o
+ .rodata.str1.1
+                0x008002c4       0x38 Builds/main.o
+ .rodata.str1.1
+                0x008002fc      0x208 Builds/mainStateMachine.o
+                                0x2ec (size before relaxing)
+ *(.gnu.linkonce.d*)
+                0x00800504                . = ALIGN (0x2)
+                0x00800504                _edata = .
+                0x00800504                PROVIDE (__data_end, .)
+
+.bss            0x00800504       0xf3
+                0x00800504                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800504        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+ .bss           0x00800504        0x0 Builds/ADC.o
+ .bss           0x00800504        0x4 Builds/HC-SR04.o
+                0x00800504                result
+                0x00800505                echoDone
+                0x00800506                microsec
+ .bss           0x00800508        0x3 Builds/LineSensors.o
+                0x00800508                binary
+                0x00800509                writeToTerminal
+ .bss           0x0080050b       0x11 Builds/MotorController.o
+                0x0080050b                forwardsRight
+                0x0080050d                forwardsLeft
+                0x0080050f                backwardsRight
+                0x00800511                backwardsLeft
+                0x00800513                time1ms
+                0x00800515                adjustSpeed
+                0x00800516                encoderValueLeft
+                0x00800518                encoderValueRight
+                0x0080051a                stopFlag
+ .bss           0x0080051c        0x0 Builds/UART.o
+ .bss           0x0080051c        0x0 Builds/UART1.o
+ .bss           0x0080051c        0x6 Builds/lineStateMachine.o
+                0x0080051c                countNoLine
+                0x0080051e                outRightSide
+                0x00800520                outLeftSide
+ .bss           0x00800522        0x8 Builds/main.o
+                0x00800522                startFlag
+                0x00800524                direction
+ .bss           0x0080052a       0x22 Builds/mainStateMachine.o
+                0x0080052a                wall_state
+                0x0080052b                state
+                0x0080052c                stateMessage
+                0x0080052e                wallStateMessage
+                0x00800530                startDistance
+                0x00800532                highSpeedMark
+                0x00800534                fullCircleDone
+                0x00800536                lineFoundFlag
+                0x00800538                tempDegrees
+                0x0080053a                prevSideDistance
+                0x0080053c                sideDistance
+                0x0080053e                newDistanceSide
+                0x00800540                prevFrontDistance
+                0x00800542                frontDistance
+                0x00800544                newDistanceFront
+                0x00800546                prevLine
+                0x00800548                newLine
+                0x0080054a                linecount
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+ .bss           0x0080054c        0x0 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x0080054c       0x10 Builds/LineSensors.o
+                0x0080054c                adc1
+                0x00800550                adc2
+                0x00800554                adc4
+                0x00800558                adc3
+ COMMON         0x0080055c       0x2c Builds/MotorController.o
+                0x0080055c                temp2
+                0x00800560                temp5
+                0x00800564                temp8
+                0x00800568                errorDiffRight
+                0x0080056a                temp6
+                0x0080056e                temp1
+                0x00800572                temp4
+                0x00800576                temp7
+                0x0080057a                turn90degreesLeft
+                0x0080057c                errorDiffLeft
+                0x0080057e                turn90degreesRight
+                0x00800580                newDirection
+                0x00800582                IValue
+                0x00800584                temp3
+ COMMON         0x00800588       0x65 Builds/main.o
+                0x00800588                RX1data
+                0x0080059c                RX0_array
+                0x008005d8                temp
+                0x008005d9                buffer
+ COMMON         0x008005ed        0xa Builds/mainStateMachine.o
+                0x008005ed                lineToChar
+                0x008005ef                DistanceSideToChar
+                0x008005f1                DistanceFrontToChar
+                0x008005f3                noLineChar
+                0x008005f7                PROVIDE (__bss_end, .)
+                0x0000228c                __data_load_start = LOADADDR (.data)
+                0x00002590                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x008005f7        0x0
+                0x008005f7                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x008005f7                PROVIDE (__noinit_end, .)
+                0x008005f7                _end = .
+                0x008005f7                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.user_signatures
+ *(.user_signatures*)
+
+.stab           0x00000000     0x4d70
+ *(.stab)
+ .stab          0x00000000      0x528 Builds/ADC.o
+ .stab          0x00000528      0x714 Builds/HC-SR04.o
+                                0x8d0 (size before relaxing)
+ .stab          0x00000c3c      0x6cc Builds/LineSensors.o
+                                0x930 (size before relaxing)
+ .stab          0x00001308      0xc54 Builds/MotorController.o
+                                0xeac (size before relaxing)
+ .stab          0x00001f5c      0x3c0 Builds/UART.o
+                                0x588 (size before relaxing)
+ .stab          0x0000231c      0x3c0 Builds/UART1.o
+                                0x588 (size before relaxing)
+ .stab          0x000026dc      0x678 Builds/lineStateMachine.o
+                                0x894 (size before relaxing)
+ .stab          0x00002d54      0x63c Builds/main.o
+                                0x888 (size before relaxing)
+ .stab          0x00003390     0x19e0 Builds/mainStateMachine.o
+                               0x1c50 (size before relaxing)
+
+.stabstr        0x00000000     0x1f96
+ *(.stabstr)
+ .stabstr       0x00000000     0x1f96 Builds/ADC.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x00000000       0x11
+ *(.comment)
+ .comment       0x00000000       0x11 Builds/ADC.o
+                                 0x12 (size before relaxing)
+ .comment       0x00000000       0x12 Builds/HC-SR04.o
+ .comment       0x00000000       0x12 Builds/LineSensors.o
+ .comment       0x00000000       0x12 Builds/MotorController.o
+ .comment       0x00000000       0x12 Builds/UART.o
+ .comment       0x00000000       0x12 Builds/UART1.o
+ .comment       0x00000000       0x12 Builds/lineStateMachine.o
+ .comment       0x00000000       0x12 Builds/main.o
+ .comment       0x00000000       0x12 Builds/mainStateMachine.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000       0xa0
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .debug_aranges
+                0x00000020       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .debug_aranges
+                0x00000040       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .debug_aranges
+                0x00000060       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .debug_aranges
+                0x00000080       0x20 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info     0x00000000      0x3b6
+ *(.debug_info)
+ .debug_info    0x00000000       0xbe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .debug_info    0x000000be       0xbe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .debug_info    0x0000017c       0xbe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .debug_info    0x0000023a       0xbe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .debug_info    0x000002f8       0xbe /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000       0x64
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000       0x14 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .debug_abbrev  0x00000014       0x14 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .debug_abbrev  0x00000028       0x14 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .debug_abbrev  0x0000003c       0x14 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .debug_abbrev  0x00000050       0x14 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+
+.debug_line     0x00000000      0x1ed
+ *(.debug_line)
+ .debug_line    0x00000000       0x78 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+ .debug_line    0x00000078       0x58 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+ .debug_line    0x000000d0       0x5c /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+ .debug_line    0x0000012c       0x63 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+ .debug_line    0x0000018f       0x5e /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_pubtypes
+ *(.debug_pubtypes)
+
+.debug_ranges
+ *(.debug_ranges)
+
+.debug_macro
+ *(.debug_macro)
+OUTPUT(Builds/main.elf elf32-avr)
+LOAD linker stubs
+
+Cross Reference Table
+
+Symbol                                            File
+DistanceFrontToChar                               Builds/mainStateMachine.o
+DistanceSideToChar                                Builds/mainStateMachine.o
+HCSR04_get_distance_cm                            Builds/HC-SR04.o
+                                                  Builds/mainStateMachine.o
+HCSR04_init                                       Builds/HC-SR04.o
+                                                  Builds/main.o
+IValue                                            Builds/MotorController.o
+LineSensors_check_all                             Builds/LineSensors.o
+                                                  Builds/mainStateMachine.o
+LineSensors_check_line                            Builds/LineSensors.o
+LineSensors_init                                  Builds/LineSensors.o
+                                                  Builds/main.o
+LineSensors_value                                 Builds/LineSensors.o
+                                                  Builds/mainStateMachine.o
+RX0_array                                         Builds/main.o
+RX1data                                           Builds/main.o
+__bad_interrupt                                   /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__bss_end                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+__bss_start                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+__data_end                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+__data_load_start                                 /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+__data_start                                      /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+__divsf3                                          /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+                                                  Builds/mainStateMachine.o
+__divsf3_pse                                      /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__divsf3x                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+__do_clear_bss                                    /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_clear_bss.o)
+                                                  Builds/mainStateMachine.o
+                                                  Builds/main.o
+                                                  Builds/lineStateMachine.o
+                                                  Builds/MotorController.o
+                                                  Builds/LineSensors.o
+                                                  Builds/HC-SR04.o
+__do_copy_data                                    /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_copy_data.o)
+                                                  Builds/mainStateMachine.o
+                                                  Builds/main.o
+                                                  Builds/lineStateMachine.o
+                                                  Builds/MotorController.o
+                                                  Builds/LineSensors.o
+__fixsfsi                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+                                                  Builds/mainStateMachine.o
+__fixunssfsi                                      /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+__floatsisf                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+                                                  Builds/mainStateMachine.o
+__floatunsisf                                     /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(floatsisf.o)
+__fp_inf                                          /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_inf.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_nan                                          /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_nan.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_pscA                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscA.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_pscB                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_pscB.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_round                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_round.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3.o)
+__fp_split3                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_splitA                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_split3.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+__fp_szero                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixsfsi.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(divsf3x.o)
+__fp_zero                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fp_zero.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libm.a(fixunssfsi.o)
+__heap_end                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__init                                            /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__itoa_ncheck                                     /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+                                                  Builds/mainStateMachine.o
+                                                  Builds/LineSensors.o
+__mulhi_const_10                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(mul10.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+__stack                                           /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__tablejump2__                                    /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+                                                  Builds/mainStateMachine.o
+                                                  Builds/lineStateMachine.o
+__tablejump__                                     /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_tablejump.o)
+__udivmodsi4                                      /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_udivmodsi4.o)
+                                                  Builds/UART1.o
+                                                  Builds/UART.o
+__utoa_common                                     /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(itoa_ncheck.o)
+__utoa_ncheck                                     /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+__vector_1                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_10                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_11                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_12                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_13                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_14                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_15                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_16                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_17                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_18                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_19                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_2                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_20                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_21                                       Builds/MotorController.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_22                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_23                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_24                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_25                                       Builds/main.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_26                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_27                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_28                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_29                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_3                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_30                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_31                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_32                                       Builds/HC-SR04.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_33                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_34                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_35                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_36                                       Builds/main.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_37                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_38                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_39                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_4                                        /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_40                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_41                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_42                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_43                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_44                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_45                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_46                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_47                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_48                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_49                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_5                                        Builds/MotorController.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_50                                       /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_6                                        Builds/MotorController.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_7                                        Builds/MotorController.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_8                                        Builds/MotorController.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_9                                        Builds/HC-SR04.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vector_default                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+__vectors                                         /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+_exit                                             /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+adc1                                              Builds/LineSensors.o
+adc2                                              Builds/LineSensors.o
+adc3                                              Builds/LineSensors.o
+adc4                                              Builds/LineSensors.o
+adjustSpeed                                       Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+atoi                                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(atoi.o)
+                                                  Builds/main.o
+backwardsLeft                                     Builds/MotorController.o
+backwardsMotorLeft                                Builds/MotorController.o
+backwardsMotorRight                               Builds/MotorController.o
+backwardsRight                                    Builds/MotorController.o
+binary                                            Builds/LineSensors.o
+buffer                                            Builds/main.o
+convert                                           Builds/LineSensors.o
+countNoLine                                       Builds/lineStateMachine.o
+direction                                         Builds/main.o
+                                                  Builds/mainStateMachine.o
+drive                                             Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+                                                  Builds/lineStateMachine.o
+driveDistanceEncoder                              Builds/mainStateMachine.o
+driveDistanceInCM                                 Builds/mainStateMachine.o
+echoDone                                          Builds/HC-SR04.o
+encoderValueLeft                                  Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+encoderValueRight                                 Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+errorDiffLeft                                     Builds/MotorController.o
+errorDiffRight                                    Builds/MotorController.o
+exit                                              /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/avr6/libgcc.a(_exit.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+findLine                                          Builds/mainStateMachine.o
+followLine                                        Builds/mainStateMachine.o
+followWall                                        Builds/mainStateMachine.o
+followWallStateMachine                            Builds/mainStateMachine.o
+forwardMotorLeft                                  Builds/MotorController.o
+forwardMotorRight                                 Builds/MotorController.o
+forwardsLeft                                      Builds/MotorController.o
+forwardsRight                                     Builds/MotorController.o
+frontDistance                                     Builds/mainStateMachine.o
+fullCircle                                        Builds/mainStateMachine.o
+fullCircleDone                                    Builds/mainStateMachine.o
+getCountNoLine                                    Builds/lineStateMachine.o
+                                                  Builds/mainStateMachine.o
+highSpeedMark                                     Builds/mainStateMachine.o
+init                                              Builds/main.o
+init_ADC                                          Builds/ADC.o
+                                                  Builds/main.o
+init_uart                                         Builds/UART.o
+                                                  Builds/main.o
+init_uart1                                        Builds/UART1.o
+                                                  Builds/main.o
+lineFoundFlag                                     Builds/mainStateMachine.o
+lineStateMachine                                  Builds/lineStateMachine.o
+                                                  Builds/mainStateMachine.o
+lineToChar                                        Builds/mainStateMachine.o
+linecount                                         Builds/mainStateMachine.o
+main                                              Builds/main.o
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/crtm2561.o
+mainState                                         Builds/mainStateMachine.o
+                                                  Builds/main.o
+microsec                                          Builds/HC-SR04.o
+motor_init                                        Builds/MotorController.o
+                                                  Builds/main.o
+motor_timer_init                                  Builds/MotorController.o
+                                                  Builds/main.o
+newDirection                                      Builds/mainStateMachine.o
+                                                  Builds/main.o
+                                                  Builds/lineStateMachine.o
+                                                  Builds/MotorController.o
+newDistanceFront                                  Builds/mainStateMachine.o
+newDistanceSide                                   Builds/mainStateMachine.o
+newLine                                           Builds/mainStateMachine.o
+noLineChar                                        Builds/mainStateMachine.o
+octagon                                           Builds/mainStateMachine.o
+outLeftSide                                       Builds/lineStateMachine.o
+                                                  Builds/MotorController.o
+outRightSide                                      Builds/lineStateMachine.o
+                                                  Builds/MotorController.o
+prevFrontDistance                                 Builds/mainStateMachine.o
+prevLine                                          Builds/mainStateMachine.o
+prevSideDistance                                  Builds/mainStateMachine.o
+pwmMax                                            Builds/MotorController.o
+result                                            Builds/HC-SR04.o
+rxData                                            Builds/main.o
+sendDistanceToInterface                           Builds/mainStateMachine.o
+sendLineToInterface                               Builds/mainStateMachine.o
+sendUartToInterface                               Builds/mainStateMachine.o
+                                                  Builds/main.o
+                                                  Builds/lineStateMachine.o
+send_pulse                                        Builds/HC-SR04.o
+sideDistance                                      Builds/mainStateMachine.o
+speed                                             Builds/lineStateMachine.o
+                                                  Builds/mainStateMachine.o
+speedReference                                    Builds/MotorController.o
+startDistance                                     Builds/mainStateMachine.o
+startFlag                                         Builds/main.o
+state                                             Builds/mainStateMachine.o
+stateMessage                                      Builds/mainStateMachine.o
+stop                                              Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+                                                  Builds/main.o
+stopFlag                                          Builds/MotorController.o
+stopTimeMs                                        Builds/mainStateMachine.o
+strncpy                                           /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strncpy.o)
+                                                  Builds/main.o
+strrev                                            /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(strrev.o)
+                                                  /usr/local/CrossPack-AVR-20131216/lib/gcc/avr/4.8.1/../../../../avr/lib/avr6/libc.a(utoa_ncheck.o)
+temp                                              Builds/main.o
+temp1                                             Builds/MotorController.o
+temp2                                             Builds/MotorController.o
+temp3                                             Builds/MotorController.o
+temp4                                             Builds/MotorController.o
+temp5                                             Builds/MotorController.o
+temp6                                             Builds/MotorController.o
+temp7                                             Builds/MotorController.o
+temp8                                             Builds/MotorController.o
+tempDegrees                                       Builds/mainStateMachine.o
+time1ms                                           Builds/MotorController.o
+                                                  Builds/mainStateMachine.o
+timer_start                                       Builds/HC-SR04.o
+timer_stop                                        Builds/HC-SR04.o
+turn90degreesEncoder                              Builds/mainStateMachine.o
+turn90degreesLeft                                 Builds/MotorController.o
+turn90degreesRight                                Builds/MotorController.o
+turnDegreesGyro                                   Builds/mainStateMachine.o
+turnSomeDegreesEncoder                            Builds/mainStateMachine.o
+turnToLine                                        Builds/mainStateMachine.o
+uart1_putc                                        Builds/UART1.o
+uart1_puts                                        Builds/UART1.o
+                                                  Builds/mainStateMachine.o
+uart_putc                                         Builds/UART.o
+                                                  Builds/mainStateMachine.o
+uart_puts                                         Builds/UART.o
+                                                  Builds/mainStateMachine.o
+                                                  Builds/LineSensors.o
+wallStateMessage                                  Builds/mainStateMachine.o
+wall_state                                        Builds/mainStateMachine.o
+wdt_init                                          Builds/main.o
+writeToTerminal                                   Builds/LineSensors.o

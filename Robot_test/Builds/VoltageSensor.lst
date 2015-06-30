@@ -1,0 +1,127 @@
+   1               		.file	"VoltageSensor.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 113               	.global	checkVoltage
+ 115               	checkVoltage:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //  VoltageSensor.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //  Robot_test
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //  Created by Mark Lee Malmose on 20/03/15.
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //  Copyright (c) 2015 Mark Lee Malmose. All rights reserved.
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** //
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** #include "VoltageSensor.h"
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** #include <avr/io.h>
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** #include "ADC.h"
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** void uart_puts(char *s);    // For debugging
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** void uart_putc(unsigned char c);
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** void LCD_write_english_string(unsigned char X,unsigned char Y,char *s);
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** void LCD_write_english_int(unsigned char X,unsigned char Y, int IntegerToDisplay, char NumberOfDigi
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** volatile uint16_t voltage = 0;
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** /* ************************************************
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****  *
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****  * Function to check the voltage from the battery
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****  *
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****  **************************************************/
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** void checkVoltage(void)
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** {
+ 117               	.LM0:
+ 118               	.LFBB1:
+ 119               	/* prologue: function */
+ 120               	/* frame size = 0 */
+ 121               	/* stack size = 0 */
+ 122               	.L__stack_usage = 0
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     ADMUX = 0x46;
+ 124               	.LM1:
+ 125 0000 86E4      		ldi r24,lo8(70)
+ 126 0002 8093 7C00 		sts 124,r24
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     ADCSRA |= (1<<ADSC);  // Start conversion
+ 128               	.LM2:
+ 129 0006 8091 7A00 		lds r24,122
+ 130 000a 8064      		ori r24,lo8(64)
+ 131 000c 8093 7A00 		sts 122,r24
+ 132               	.L3:
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     while (ADCSRA &  (1<<ADIF));
+ 134               	.LM3:
+ 135 0010 8091 7A00 		lds r24,122
+ 136 0014 84FD      		sbrc r24,4
+ 137 0016 00C0      		rjmp .L3
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     // wait until conversion  completes; ADSC=0 means Complete
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     uint8_t lowADCL = ADCL;
+ 139               	.LM4:
+ 140 0018 8091 7800 		lds r24,120
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     uint16_t adcResult = ADCH<<8 | lowADCL;
+ 142               	.LM5:
+ 143 001c 2091 7900 		lds r18,121
+ 144 0020 90E0      		ldi r25,0
+ 145 0022 922B      		or r25,r18
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     voltage = adcResult;
+ 147               	.LM6:
+ 148 0024 9093 0000 		sts voltage+1,r25
+ 149 0028 8093 0000 		sts voltage,r24
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     ADMUX = 0x46;
+ 151               	.LM7:
+ 152 002c 86E4      		ldi r24,lo8(70)
+ 153 002e 8093 7C00 		sts 124,r24
+ 154 0032 0895      		ret
+ 160               	.Lscope1:
+ 162               	.global	VoltageSensors_value
+ 164               	VoltageSensors_value:
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****    // LCD_write_english_int(0, 5, voltage, 4);
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** }
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** 
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** int VoltageSensors_value(void)
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** {
+ 166               	.LM8:
+ 167               	.LFBB2:
+ 168               	/* prologue: function */
+ 169               	/* frame size = 0 */
+ 170               	/* stack size = 0 */
+ 171               	.L__stack_usage = 0
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c ****     return voltage;
+ 173               	.LM9:
+ 174 0034 8091 0000 		lds r24,voltage
+ 175 0038 9091 0000 		lds r25,voltage+1
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/VoltageSensor.c **** }...
+ 177               	.LM10:
+ 178 003c 0895      		ret
+ 180               	.Lscope2:
+ 181               	.global	voltage
+ 182               		.section .bss
+ 185               	voltage:
+ 186 0000 0000      		.zero	2
+ 188               		.text
+ 190               	.Letext0:
+ 191               		.ident	"GCC: (GNU) 4.8.1"
+ 192               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 VoltageSensor.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:115    .text:00000000 checkVoltage
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:185    .bss:00000000 voltage
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc38C3f0.s:164    .text:00000034 VoltageSensors_value
+
+UNDEFINED SYMBOLS
+__do_clear_bss

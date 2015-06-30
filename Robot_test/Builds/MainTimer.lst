@@ -1,0 +1,215 @@
+   1               		.file	"MainTimer.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 103               	.global	main_timer_start
+ 105               	main_timer_start:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //  MainTimer.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //  Robot_test
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //  Created by Mark Lee Malmose on 28/02/15.
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //  Copyright (c) 2015 Mark Lee Malmose. All rights reserved.
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** //
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** #include <avr/io.h>
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** #include <avr/interrupt.h>
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** #include "Globals.h"
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** #include "MainTimer.h"
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** void main_timer_start(void)
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** {
+ 107               	.LM0:
+ 108               	.LFBB1:
+ 109               	/* prologue: function */
+ 110               	/* frame size = 0 */
+ 111               	/* stack size = 0 */
+ 112               	.L__stack_usage = 0
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // start 16-bit timer
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // Clear interrupts
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     cli();
+ 114               	.LM1:
+ 115               	/* #APP */
+ 116               	 ;  18 "/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c" 1
+ 117 0000 F894      		cli
+ 118               	 ;  0 "" 2
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // set up timer with no prescaler and CTC mode
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     TCCR3B |= (1 << WGM12)|(1 << CS10);
+ 120               	.LM2:
+ 121               	/* #NOAPP */
+ 122 0002 E1E9      		ldi r30,lo8(-111)
+ 123 0004 F0E0      		ldi r31,0
+ 124 0006 8081      		ld r24,Z
+ 125 0008 8960      		ori r24,lo8(9)
+ 126 000a 8083      		st Z,r24
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // initialize counter
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     TCNT3 = 0;
+ 128               	.LM3:
+ 129 000c 1092 9500 		sts 148+1,__zero_reg__
+ 130 0010 1092 9400 		sts 148,__zero_reg__
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // initialize compare value 1 pulse is 1 milisecond
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     OCR3A = 15999; 
+ 132               	.LM4:
+ 133 0014 8FE7      		ldi r24,lo8(127)
+ 134 0016 9EE3      		ldi r25,lo8(62)
+ 135 0018 9093 9900 		sts 152+1,r25
+ 136 001c 8093 9800 		sts 152,r24
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // enable compare interrupt
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     TIMSK3 |= (1 << OCIE3A);
+ 138               	.LM5:
+ 139 0020 E1E7      		ldi r30,lo8(113)
+ 140 0022 F0E0      		ldi r31,0
+ 141 0024 8081      		ld r24,Z
+ 142 0026 8260      		ori r24,lo8(2)
+ 143 0028 8083      		st Z,r24
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     // enable global interrupts
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     sei();
+ 145               	.LM6:
+ 146               	/* #APP */
+ 147               	 ;  33 "/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c" 1
+ 148 002a 7894      		sei
+ 149               	 ;  0 "" 2
+ 150               	/* #NOAPP */
+ 151 002c 0895      		ret
+ 153               	.Lscope1:
+ 155               	.global	main_timer_stop
+ 157               	main_timer_stop:
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** }
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** void main_timer_stop(void)
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** {
+ 159               	.LM7:
+ 160               	.LFBB2:
+ 161               	/* prologue: function */
+ 162               	/* frame size = 0 */
+ 163               	/* stack size = 0 */
+ 164               	.L__stack_usage = 0
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     TCCR3B = 0x0;
+ 166               	.LM8:
+ 167 002e 1092 9100 		sts 145,__zero_reg__
+ 168 0032 0895      		ret
+ 170               	.Lscope2:
+ 172               	.global	__vector_32
+ 174               	__vector_32:
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** }
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** ISR(TIMER3_COMPA_vect)
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** {
+ 176               	.LM9:
+ 177               	.LFBB3:
+ 178 0034 1F92      		push r1
+ 179 0036 0F92      		push r0
+ 180 0038 0FB6      		in r0,__SREG__
+ 181 003a 0F92      		push r0
+ 182 003c 1124      		clr __zero_reg__
+ 183 003e 2F93      		push r18
+ 184 0040 8F93      		push r24
+ 185 0042 9F93      		push r25
+ 186 0044 AF93      		push r26
+ 187 0046 BF93      		push r27
+ 188               	/* prologue: Signal */
+ 189               	/* frame size = 0 */
+ 190               	/* stack size = 8 */
+ 191               	.L__stack_usage = 8
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     maintimer_miliseconds++;
+ 193               	.LM10:
+ 194 0048 8091 0000 		lds r24,maintimer_miliseconds
+ 195 004c 9091 0000 		lds r25,maintimer_miliseconds+1
+ 196 0050 A091 0000 		lds r26,maintimer_miliseconds+2
+ 197 0054 B091 0000 		lds r27,maintimer_miliseconds+3
+ 198 0058 0196      		adiw r24,1
+ 199 005a A11D      		adc r26,__zero_reg__
+ 200 005c B11D      		adc r27,__zero_reg__
+ 201 005e 8093 0000 		sts maintimer_miliseconds,r24
+ 202 0062 9093 0000 		sts maintimer_miliseconds+1,r25
+ 203 0066 A093 0000 		sts maintimer_miliseconds+2,r26
+ 204 006a B093 0000 		sts maintimer_miliseconds+3,r27
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     miliSecondTimer++;
+ 206               	.LM11:
+ 207 006e 8091 0000 		lds r24,miliSecondTimer
+ 208 0072 9091 0000 		lds r25,miliSecondTimer+1
+ 209 0076 A091 0000 		lds r26,miliSecondTimer+2
+ 210 007a B091 0000 		lds r27,miliSecondTimer+3
+ 211 007e 0196      		adiw r24,1
+ 212 0080 A11D      		adc r26,__zero_reg__
+ 213 0082 B11D      		adc r27,__zero_reg__
+ 214 0084 8093 0000 		sts miliSecondTimer,r24
+ 215 0088 9093 0000 		sts miliSecondTimer+1,r25
+ 216 008c A093 0000 		sts miliSecondTimer+2,r26
+ 217 0090 B093 0000 		sts miliSecondTimer+3,r27
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     if(miliSecondTimer==1000)
+ 219               	.LM12:
+ 220 0094 883E      		cpi r24,-24
+ 221 0096 9340      		sbci r25,3
+ 222 0098 A105      		cpc r26,__zero_reg__
+ 223 009a B105      		cpc r27,__zero_reg__
+ 224 009c 01F4      		brne .L4
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     {
+  49:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****         second++;
+ 226               	.LM13:
+ 227 009e 8091 0000 		lds r24,second
+ 228 00a2 9091 0000 		lds r25,second+1
+ 229 00a6 0196      		adiw r24,1
+ 230 00a8 9093 0000 		sts second+1,r25
+ 231 00ac 8093 0000 		sts second,r24
+  50:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****         miliSecondTimer=0;
+ 233               	.LM14:
+ 234 00b0 1092 0000 		sts miliSecondTimer,__zero_reg__
+ 235 00b4 1092 0000 		sts miliSecondTimer+1,__zero_reg__
+ 236 00b8 1092 0000 		sts miliSecondTimer+2,__zero_reg__
+ 237 00bc 1092 0000 		sts miliSecondTimer+3,__zero_reg__
+ 238               	.L4:
+  51:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     }
+  52:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  53:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** 
+  54:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     TCNT3 = 0x00;
+ 240               	.LM15:
+ 241 00c0 1092 9500 		sts 148+1,__zero_reg__
+ 242 00c4 1092 9400 		sts 148,__zero_reg__
+ 243               	/* epilogue start */
+  55:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     
+  56:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     //DDRF |= (1<<PF0);
+  57:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c ****     //PORTF ^= (1<<PF0);
+  58:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/MainTimer.c **** }
+ 245               	.LM16:
+ 246 00c8 BF91      		pop r27
+ 247 00ca AF91      		pop r26
+ 248 00cc 9F91      		pop r25
+ 249 00ce 8F91      		pop r24
+ 250 00d0 2F91      		pop r18
+ 251 00d2 0F90      		pop r0
+ 252 00d4 0FBE      		out __SREG__,r0
+ 253 00d6 0F90      		pop r0
+ 254 00d8 1F90      		pop r1
+ 255 00da 1895      		reti
+ 257               	.Lscope3:
+ 259               	.Letext0:
+ 260               		.ident	"GCC: (GNU) 4.8.1"
+DEFINED SYMBOLS
+                            *ABS*:00000000 MainTimer.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:105    .text:00000000 main_timer_start
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:157    .text:0000002e main_timer_stop
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccngNev1.s:174    .text:00000034 __vector_32
+
+UNDEFINED SYMBOLS
+maintimer_miliseconds
+miliSecondTimer
+second

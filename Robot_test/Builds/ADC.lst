@@ -1,0 +1,70 @@
+   1               		.file	"ADC.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 113               	.global	init_ADC
+ 115               	init_ADC:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //  ADC.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //  Robot_test
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //  Created by Mark Lee Malmose on 16/03/15.
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //  Copyright (c) 2015 Mark Lee Malmose. All rights reserved.
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** //
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** 
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** #include "ADC.h"
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** #include <avr/io.h>
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** 
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** // Initialize adc
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** void init_ADC(void)
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c **** {
+ 117               	.LM0:
+ 118               	.LFBB1:
+ 119               	/* prologue: function */
+ 120               	/* frame size = 0 */
+ 121               	/* stack size = 0 */
+ 122               	.L__stack_usage = 0
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c ****     ADCSRA |= (1<<ADPS2);   // Set Prescaler /16
+ 124               	.LM1:
+ 125 0000 EAE7      		ldi r30,lo8(122)
+ 126 0002 F0E0      		ldi r31,0
+ 127 0004 8081      		ld r24,Z
+ 128 0006 8460      		ori r24,lo8(4)
+ 129 0008 8083      		st Z,r24
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c ****     ADMUX  |= (1<<REFS0);     // Voltage reference Avcc
+ 131               	.LM2:
+ 132 000a ACE7      		ldi r26,lo8(124)
+ 133 000c B0E0      		ldi r27,0
+ 134 000e 8C91      		ld r24,X
+ 135 0010 8064      		ori r24,lo8(64)
+ 136 0012 8C93      		st X,r24
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c ****     ADCSRA |= 1<<ADEN;      // Enable ADC
+ 138               	.LM3:
+ 139 0014 8081      		ld r24,Z
+ 140 0016 8068      		ori r24,lo8(-128)
+ 141 0018 8083      		st Z,r24
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/ADC.c ****     ADCSRA |= 1<<ADSC;      // Start conversion
+ 143               	.LM4:
+ 144 001a 8081      		ld r24,Z
+ 145 001c 8064      		ori r24,lo8(64)
+ 146 001e 8083      		st Z,r24
+ 147 0020 0895      		ret
+ 149               	.Lscope1:
+ 151               	.Letext0:
+ 152               		.ident	"GCC: (GNU) 4.8.1"
+DEFINED SYMBOLS
+                            *ABS*:00000000 ADC.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccRxWLfG.s:115    .text:00000000 init_ADC
+
+NO UNDEFINED SYMBOLS

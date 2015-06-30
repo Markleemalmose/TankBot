@@ -1,0 +1,709 @@
+   1               		.file	"i2c_sw.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+  70               	delayI2c:
+   1:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /******************************************************************************\
+   2:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @file i2c_sw.c
+   3:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @date 18-Jun-2009
+   4:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @author Seán Harte
+   5:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *
+   6:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * Implementation of functions I2C. This is the software implementation. These
+   7:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * functions require the following functions (or macros):
+   8:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_initPins()
+   9:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_pullDownSda()
+  10:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_releaseSda()
+  11:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_pullDownScl()
+  12:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_releaseScl()
+  13:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_getSda()       // returns SDA as 0 or 1
+  14:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *     i2cSw_getScl()       // returns SCL as 0 or 1
+  15:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** \******************************************************************************/
+  16:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  17:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  18:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #include "global.h"
+  19:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #include "delay.h"
+  20:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #include "i2c.h"
+  21:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #if defined (UC_AVR)
+  22:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #   include "avr/i2c_sw_avr.h"
+  23:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #elif defined (UC_8051)
+  24:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #   include "nrf/i2c_sw_nrf.h"
+  25:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** #endif
+  26:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  27:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  28:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /* Internal function prototypes for I2C functions. */
+  29:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void delayI2c(void);
+  30:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void pulseClock(void);
+  31:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void start(void);
+  32:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void stop(void);
+  33:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static uint8_t readBit(void);
+  34:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static uint8_t putByte(uint8_t byte);
+  35:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  36:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  37:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /******************************************************************************\
+  38:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * See i2c.h for documentation of these functions.
+  39:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** \******************************************************************************/
+  40:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  41:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** uint8_t i2c_write(uint8_t address, const uint8_t* data, uint16_t length,
+  42:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****                                                                  uint8_t option)
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+  44:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_START) {
+  45:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         start();
+  46:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  47:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  48:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_ADDRESS) {
+  49:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         address <<= 1;          /* shift 0 into read flag bit */
+  50:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  51:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(address) == STATUS_NO_ACK) {
+  52:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             stop();
+  53:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             return STATUS_NO_ACK;
+  54:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+  55:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  56:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length - 1; ++i) {
+  58:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(*data++)) {
+  59:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             stop();
+  60:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             return STATUS_NO_ACK;
+  61:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+  62:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  63:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     /* ACK is optional after last byte */
+  64:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     putByte(*data++);
+  65:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_STOP) {
+  66:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         stop();
+  67:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  68:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     return STATUS_OK;
+  69:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+  70:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  71:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  72:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** uint8_t i2c_read(uint8_t address, uint8_t* data, uint16_t length, uint8_t option)
+  73:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+  74:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_START) {
+  75:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         start();
+  76:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  77:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  78:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_ADDRESS) {
+  79:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         address = (address << 1) | 0x01;    /* Shift address and set read flag */
+  80:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(address) == STATUS_NO_ACK) {
+  81:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             stop();
+  82:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             return STATUS_NO_ACK;
+  83:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+  84:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+  85:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length; i++, data++) {
+  87:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         /* read byte */
+  88:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         for (uint8_t j = 0x80; j >= 1; j >>= 1) {
+  89:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             if (readBit()) {
+  90:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****                 *data |= j;
+  91:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             }
+  92:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             else {
+  93:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****                 *data &= ~j;
+  94:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             }
+  95:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+  96:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         /* Give ack if required */
+  97:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (i < length - 1) {
+  98:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             i2cSw_pullDownSda();
+  99:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+ 100:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         pulseClock();
+ 101:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         i2cSw_releaseSda();
+ 102:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 103:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 104:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_STOP) {
+ 105:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         stop();
+ 106:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 107:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     return STATUS_OK;
+ 108:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 109:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 110:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 111:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /******************************************************************************\
+ 112:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * Functions used only within this file.
+ 113:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** \******************************************************************************/
+ 114:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void delayI2c(void)
+ 115:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+  72               	.LM0:
+  73               	.LFBB1:
+  74               	/* prologue: function */
+  75               	/* frame size = 0 */
+  76               	/* stack size = 0 */
+  77               	.L__stack_usage = 0
+ 116:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delay_us(((1e6 / (float)I2C_FREQ) / 2) - 3);
+  79               	.LM1:
+  80 0000 82E0      		ldi r24,lo8(2)
+  81 0002 90E0      		ldi r25,0
+  82 0004 0C94 0000 		jmp delay_us
+  84               	.Lscope1:
+  87               	stop:
+ 117:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 118:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 119:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 120:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /**-----------------------------------------------------------------------------
+ 121:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * Pulse clock once. After SCL is released, there is a delay incase the slave
+ 122:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * is holding SCL low.
+ 123:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  */
+ 124:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void pulseClock(void)
+ 125:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 126:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 127:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 128:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_releaseScl();
+ 129:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 130:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     /* Some slave devices hold the clock down until they are ready */
+ 131:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     while (!i2cSw_getScl()) {
+ 132:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         ;
+ 133:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 134:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 135:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 136:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 137:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 138:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 139:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 140:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 141:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /**-----------------------------------------------------------------------------
+ 142:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * START: Bring SDA low while SCL is high.
+ 143:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  */
+ 144:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void start(void)
+ 145:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 146:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_initPins();
+ 147:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 148:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownSda();
+ 149:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 151:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 152:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 153:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 154:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /**-----------------------------------------------------------------------------
+ 155:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * STOP: Release SDA while SCL is high.
+ 156:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  */
+ 157:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static void stop(void)
+ 158:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+  89               	.LM2:
+  90               	.LFBB2:
+  91               	/* prologue: function */
+  92               	/* frame size = 0 */
+  93               	/* stack size = 0 */
+  94               	.L__stack_usage = 0
+ 159:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownSda();
+  96               	.LM3:
+  97 0008 0E94 0000 		call i2cSw_pullDownSda
+ 160:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+  99               	.LM4:
+ 100 000c 0E94 0000 		call delayI2c
+ 161:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_releaseScl();
+ 102               	.LM5:
+ 103 0010 0E94 0000 		call i2cSw_releaseScl
+ 162:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 105               	.LM6:
+ 106 0014 0E94 0000 		call delayI2c
+ 163:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_releaseSda();
+ 108               	.LM7:
+ 109 0018 0C94 0000 		jmp i2cSw_releaseSda
+ 111               	.Lscope2:
+ 114               	pulseClock:
+ 125:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 116               	.LM8:
+ 117               	.LFBB3:
+ 118               	/* prologue: function */
+ 119               	/* frame size = 0 */
+ 120               	/* stack size = 0 */
+ 121               	.L__stack_usage = 0
+ 126:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 123               	.LM9:
+ 124 001c 0E94 0000 		call delayI2c
+ 128:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_releaseScl();
+ 126               	.LM10:
+ 127 0020 0E94 0000 		call i2cSw_releaseScl
+ 128               	.L5:
+ 129               	.LBB2:
+ 131:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     while (!i2cSw_getScl()) {
+ 131               	.LM11:
+ 132 0024 0E94 0000 		call i2cSw_getScl
+ 133 0028 892B      		or r24,r25
+ 134 002a 01F0      		breq .L5
+ 135               	.LBE2:
+ 135:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 137               	.LM12:
+ 138 002c 0E94 0000 		call delayI2c
+ 137:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 140               	.LM13:
+ 141 0030 0C94 0000 		jmp i2cSw_pullDownScl
+ 143               	.Lscope3:
+ 146               	readBit:
+ 164:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 165:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 166:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 167:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /**-----------------------------------------------------------------------------
+ 168:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * Read and return single bit: release SCL, read SDA and pull down SCL. After
+ 169:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * SCL is released, there is a delay in case the slave is holding SCL low.
+ 170:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *
+ 171:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @return 0 or non-zero, depending on what bit was read.
+ 172:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  */
+ 173:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static uint8_t readBit(void)
+ 174:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 148               	.LM14:
+ 149               	.LFBB4:
+ 150 0034 CF93      		push r28
+ 151               	/* prologue: function */
+ 152               	/* frame size = 0 */
+ 153               	/* stack size = 1 */
+ 154               	.L__stack_usage = 1
+ 175:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     uint8_t bit;
+ 176:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_releaseScl();
+ 156               	.LM15:
+ 157 0036 0E94 0000 		call i2cSw_releaseScl
+ 177:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 159               	.LM16:
+ 160 003a 0E94 0000 		call delayI2c
+ 161               	.L9:
+ 162               	.LBB3:
+ 178:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     /* Some slave devices hold the clock down until they are ready */
+ 179:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     while (!i2cSw_getScl()) {
+ 164               	.LM17:
+ 165 003e 0E94 0000 		call i2cSw_getScl
+ 166 0042 892B      		or r24,r25
+ 167 0044 01F0      		breq .L9
+ 168               	.LBE3:
+ 180:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         ;
+ 181:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 182:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     bit = i2cSw_getSda();
+ 170               	.LM18:
+ 171 0046 0E94 0000 		call i2cSw_getSda
+ 172 004a C82F      		mov r28,r24
+ 183:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 174               	.LM19:
+ 175 004c 0E94 0000 		call i2cSw_pullDownScl
+ 184:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     return bit;
+ 185:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 177               	.LM20:
+ 178 0050 8C2F      		mov r24,r28
+ 179               	/* epilogue start */
+ 180 0052 CF91      		pop r28
+ 181 0054 0895      		ret
+ 183               	.Lscope4:
+ 187               	putByte:
+ 186:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 187:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** 
+ 188:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** /**-----------------------------------------------------------------------------
+ 189:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * Send byte MSB first. SCL is pulsed between each bit.
+ 190:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *
+ 191:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @param byte what byte to write.
+ 192:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  *
+ 193:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  * @return STATUS_NO_ACK no ack is received, otherwise STATUS_ACK.
+ 194:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****  */
+ 195:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** static uint8_t putByte(uint8_t byte)
+ 196:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 189               	.LM21:
+ 190               	.LFBB5:
+ 191 0056 0F93      		push r16
+ 192 0058 1F93      		push r17
+ 193 005a CF93      		push r28
+ 194 005c DF93      		push r29
+ 195               	/* prologue: function */
+ 196               	/* frame size = 0 */
+ 197               	/* stack size = 4 */
+ 198               	.L__stack_usage = 4
+ 199 005e 082F      		mov r16,r24
+ 201               	.LM22:
+ 202 0060 C8E0      		ldi r28,lo8(8)
+ 203 0062 D0E0      		ldi r29,0
+ 204               	.LBB4:
+ 197:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint8_t i = 0x80; i > 0; i >>= 1) {
+ 206               	.LM23:
+ 207 0064 10E8      		ldi r17,lo8(-128)
+ 208               	.L13:
+ 209               	.LBB5:
+ 198:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (!(byte & i)) {
+ 211               	.LM24:
+ 212 0066 812F      		mov r24,r17
+ 213 0068 8023      		and r24,r16
+ 214 006a 01F4      		brne .L11
+ 215               	.LBB6:
+ 199:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             i2cSw_pullDownSda();
+ 217               	.LM25:
+ 218 006c 0E94 0000 		call i2cSw_pullDownSda
+ 219               	.L11:
+ 220               	.LBE6:
+ 200:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         }
+ 201:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         pulseClock();
+ 222               	.LM26:
+ 223 0070 0E94 0000 		call pulseClock
+ 202:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         i2cSw_releaseSda();
+ 225               	.LM27:
+ 226 0074 0E94 0000 		call i2cSw_releaseSda
+ 227               	.LBE5:
+ 197:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint8_t i = 0x80; i > 0; i >>= 1) {
+ 229               	.LM28:
+ 230 0078 1695      		lsr r17
+ 231 007a 2197      		sbiw r28,1
+ 232 007c 2097      		sbiw r28,0
+ 233 007e 01F4      		brne .L13
+ 234               	.LBE4:
+ 203:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 204:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (readBit()) {
+ 236               	.LM29:
+ 237 0080 0E94 0000 		call readBit
+ 238 0084 8823      		tst r24
+ 239 0086 01F0      		breq .L15
+ 205:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         return STATUS_NO_ACK;
+ 241               	.LM30:
+ 242 0088 82E0      		ldi r24,lo8(2)
+ 243 008a 00C0      		rjmp .L14
+ 244               	.L15:
+ 206:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 207:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     else {
+ 208:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         return STATUS_OK;
+ 246               	.LM31:
+ 247 008c 80E0      		ldi r24,0
+ 248               	.L14:
+ 249               	/* epilogue start */
+ 209:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     }
+ 210:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 251               	.LM32:
+ 252 008e DF91      		pop r29
+ 253 0090 CF91      		pop r28
+ 254 0092 1F91      		pop r17
+ 255 0094 0F91      		pop r16
+ 256 0096 0895      		ret
+ 261               	.Lscope5:
+ 267               	.global	i2c_write
+ 269               	i2c_write:
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 271               	.LM33:
+ 272               	.LFBB6:
+ 273 0098 DF92      		push r13
+ 274 009a EF92      		push r14
+ 275 009c FF92      		push r15
+ 276 009e 0F93      		push r16
+ 277 00a0 1F93      		push r17
+ 278 00a2 CF93      		push r28
+ 279 00a4 DF93      		push r29
+ 280               	/* prologue: function */
+ 281               	/* frame size = 0 */
+ 282               	/* stack size = 7 */
+ 283               	.L__stack_usage = 7
+ 284 00a6 C82F      		mov r28,r24
+ 285 00a8 8B01      		movw r16,r22
+ 286 00aa 7A01      		movw r14,r20
+ 287 00ac D22E      		mov r13,r18
+  44:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_START) {
+ 289               	.LM34:
+ 290 00ae 20FF      		sbrs r18,0
+ 291 00b0 00C0      		rjmp .L17
+ 292               	.LBB10:
+ 293               	.LBB11:
+ 146:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_initPins();
+ 295               	.LM35:
+ 296 00b2 0E94 0000 		call i2cSw_initPins
+ 147:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 298               	.LM36:
+ 299 00b6 0E94 0000 		call delayI2c
+ 148:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownSda();
+ 301               	.LM37:
+ 302 00ba 0E94 0000 		call i2cSw_pullDownSda
+ 149:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 304               	.LM38:
+ 305 00be 0E94 0000 		call delayI2c
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 307               	.LM39:
+ 308 00c2 0E94 0000 		call i2cSw_pullDownScl
+ 309               	.L17:
+ 310               	.LBE11:
+ 311               	.LBE10:
+  48:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_ADDRESS) {
+ 313               	.LM40:
+ 314 00c6 D2FC      		sbrc r13,2
+ 315 00c8 00C0      		rjmp .L18
+ 316               	.L20:
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 318               	.LM41:
+ 319 00ca E801      		movw r28,r16
+ 320               	.LBB12:
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length - 1; ++i) {
+ 322               	.LM42:
+ 323 00cc 81E0      		ldi r24,1
+ 324 00ce E81A      		sub r14,r24
+ 325 00d0 F108      		sbc r15,__zero_reg__
+ 326 00d2 00C0      		rjmp .L19
+ 327               	.L18:
+ 328               	.LBE12:
+  51:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(address) == STATUS_NO_ACK) {
+ 330               	.LM43:
+ 331 00d4 8C2F      		mov r24,r28
+ 332 00d6 880F      		lsl r24
+ 333 00d8 0E94 0000 		call putByte
+ 334 00dc 8230      		cpi r24,lo8(2)
+ 335 00de 01F4      		brne .L20
+ 336               	.L22:
+  52:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             stop();
+ 338               	.LM44:
+ 339 00e0 0E94 0000 		call stop
+  53:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             return STATUS_NO_ACK;
+ 341               	.LM45:
+ 342 00e4 82E0      		ldi r24,lo8(2)
+ 343 00e6 00C0      		rjmp .L21
+ 344               	.L23:
+ 345 00e8 2196      		adiw r28,1
+ 346               	.LBB13:
+  58:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(*data++)) {
+ 348               	.LM46:
+ 349 00ea 8081      		ld r24,Z
+ 350 00ec 0E94 0000 		call putByte
+ 351 00f0 8111      		cpse r24,__zero_reg__
+ 352 00f2 00C0      		rjmp .L22
+ 353               	.L19:
+ 354 00f4 FE01      		movw r30,r28
+ 355 00f6 CE01      		movw r24,r28
+ 356 00f8 801B      		sub r24,r16
+ 357 00fa 910B      		sbc r25,r17
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length - 1; ++i) {
+ 359               	.LM47:
+ 360 00fc 8E15      		cp r24,r14
+ 361 00fe 9F05      		cpc r25,r15
+ 362 0100 00F0      		brlo .L23
+ 363               	.LBE13:
+  64:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     putByte(*data++);
+ 365               	.LM48:
+ 366 0102 8881      		ld r24,Y
+ 367 0104 0E94 0000 		call putByte
+  65:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_STOP) {
+ 369               	.LM49:
+ 370 0108 D1FC      		sbrc r13,1
+  66:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         stop();
+ 372               	.LM50:
+ 373 010a 0E94 0000 		call stop
+ 374               	.L24:
+  68:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     return STATUS_OK;
+ 376               	.LM51:
+ 377 010e 80E0      		ldi r24,0
+ 378               	.L21:
+ 379               	/* epilogue start */
+  69:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 381               	.LM52:
+ 382 0110 DF91      		pop r29
+ 383 0112 CF91      		pop r28
+ 384 0114 1F91      		pop r17
+ 385 0116 0F91      		pop r16
+ 386 0118 FF90      		pop r15
+ 387 011a EF90      		pop r14
+ 388 011c DF90      		pop r13
+ 389 011e 0895      		ret
+ 391               	.Lscope6:
+ 397               	.global	i2c_read
+ 399               	i2c_read:
+  73:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** {
+ 401               	.LM53:
+ 402               	.LFBB7:
+ 403 0120 8F92      		push r8
+ 404 0122 9F92      		push r9
+ 405 0124 AF92      		push r10
+ 406 0126 BF92      		push r11
+ 407 0128 CF92      		push r12
+ 408 012a DF92      		push r13
+ 409 012c EF92      		push r14
+ 410 012e FF92      		push r15
+ 411 0130 0F93      		push r16
+ 412 0132 1F93      		push r17
+ 413 0134 CF93      		push r28
+ 414 0136 DF93      		push r29
+ 415               	/* prologue: function */
+ 416               	/* frame size = 0 */
+ 417               	/* stack size = 12 */
+ 418               	.L__stack_usage = 12
+ 419 0138 182F      		mov r17,r24
+ 420 013a EB01      		movw r28,r22
+ 421 013c 6A01      		movw r12,r20
+ 422 013e 822E      		mov r8,r18
+  74:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_START) {
+ 424               	.LM54:
+ 425 0140 20FF      		sbrs r18,0
+ 426 0142 00C0      		rjmp .L29
+ 427               	.LBB20:
+ 428               	.LBB21:
+ 146:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_initPins();
+ 430               	.LM55:
+ 431 0144 0E94 0000 		call i2cSw_initPins
+ 147:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 433               	.LM56:
+ 434 0148 0E94 0000 		call delayI2c
+ 148:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownSda();
+ 436               	.LM57:
+ 437 014c 0E94 0000 		call i2cSw_pullDownSda
+ 149:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     delayI2c();
+ 439               	.LM58:
+ 440 0150 0E94 0000 		call delayI2c
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     i2cSw_pullDownScl();
+ 442               	.LM59:
+ 443 0154 0E94 0000 		call i2cSw_pullDownScl
+ 444               	.L29:
+ 445               	.LBE21:
+ 446               	.LBE20:
+  78:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_ADDRESS) {
+ 448               	.LM60:
+ 449 0158 82FC      		sbrc r8,2
+ 450 015a 00C0      		rjmp .L30
+ 451               	.L32:
+ 452               	.LBB22:
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length; i++, data++) {
+ 454               	.LM61:
+ 455 015c 00E0      		ldi r16,0
+ 456 015e 10E0      		ldi r17,0
+ 457               	.LBB23:
+  97:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (i < length - 1) {
+ 459               	.LM62:
+ 460 0160 5601      		movw r10,r12
+ 461 0162 81E0      		ldi r24,1
+ 462 0164 A81A      		sub r10,r24
+ 463 0166 B108      		sbc r11,__zero_reg__
+ 464 0168 00C0      		rjmp .L31
+ 465               	.L30:
+ 466               	.LBE23:
+ 467               	.LBE22:
+  79:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         address = (address << 1) | 0x01;    /* Shift address and set read flag */
+ 469               	.LM63:
+ 470 016a 812F      		mov r24,r17
+ 471 016c 880F      		lsl r24
+  80:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (putByte(address) == STATUS_NO_ACK) {
+ 473               	.LM64:
+ 474 016e 8160      		ori r24,lo8(1)
+ 475 0170 0E94 0000 		call putByte
+ 476 0174 8230      		cpi r24,lo8(2)
+ 477 0176 01F4      		brne .L32
+  81:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             stop();
+ 479               	.LM65:
+ 480 0178 0E94 0000 		call stop
+  82:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             return STATUS_NO_ACK;
+ 482               	.LM66:
+ 483 017c 82E0      		ldi r24,lo8(2)
+ 484 017e 00C0      		rjmp .L33
+ 485               	.L39:
+ 486               	.LBB29:
+ 487               	.LBB27:
+ 488               	.LBB24:
+  89:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             if (readBit()) {
+ 490               	.LM67:
+ 491 0180 0E94 0000 		call readBit
+ 492 0184 9881      		ld r25,Y
+ 493 0186 8823      		tst r24
+ 494 0188 01F0      		breq .L34
+  90:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****                 *data |= j;
+ 496               	.LM68:
+ 497 018a 9929      		or r25,r9
+ 498 018c 9883      		st Y,r25
+ 499               	.L35:
+  88:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         for (uint8_t j = 0x80; j >= 1; j >>= 1) {
+ 501               	.LM69:
+ 502 018e 9694      		lsr r9
+ 503 0190 81E0      		ldi r24,1
+ 504 0192 E81A      		sub r14,r24
+ 505 0194 F108      		sbc r15,__zero_reg__
+ 506 0196 E114      		cp r14,__zero_reg__
+ 507 0198 F104      		cpc r15,__zero_reg__
+ 508 019a 01F4      		brne .L39
+ 509               	.LBE24:
+  97:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         if (i < length - 1) {
+ 511               	.LM70:
+ 512 019c 0A15      		cp r16,r10
+ 513 019e 1B05      		cpc r17,r11
+ 514 01a0 00F4      		brsh .L37
+ 515               	.LBB25:
+  98:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****             i2cSw_pullDownSda();
+ 517               	.LM71:
+ 518 01a2 0E94 0000 		call i2cSw_pullDownSda
+ 519               	.L37:
+ 520               	.LBE25:
+ 100:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         pulseClock();
+ 522               	.LM72:
+ 523 01a6 0E94 0000 		call pulseClock
+ 101:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         i2cSw_releaseSda();
+ 525               	.LM73:
+ 526 01aa 0E94 0000 		call i2cSw_releaseSda
+ 527               	.LBE27:
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length; i++, data++) {
+ 529               	.LM74:
+ 530 01ae 0F5F      		subi r16,-1
+ 531 01b0 1F4F      		sbci r17,-1
+ 532 01b2 2196      		adiw r28,1
+ 533               	.L31:
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length; i++, data++) {
+ 535               	.LM75:
+ 536 01b4 0C15      		cp r16,r12
+ 537 01b6 1D05      		cpc r17,r13
+ 538 01b8 01F0      		breq .L38
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     for (uint16_t i = 0; i < length; i++, data++) {
+ 540               	.LM76:
+ 541 01ba 88E0      		ldi r24,lo8(8)
+ 542 01bc E82E      		mov r14,r24
+ 543 01be F12C      		mov r15,__zero_reg__
+ 544 01c0 90E8      		ldi r25,lo8(-128)
+ 545 01c2 992E      		mov r9,r25
+ 546 01c4 00C0      		rjmp .L39
+ 547               	.L34:
+ 548               	.LBB28:
+ 549               	.LBB26:
+  93:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****                 *data &= ~j;
+ 551               	.LM77:
+ 552 01c6 892D      		mov r24,r9
+ 553 01c8 8095      		com r24
+ 554 01ca 8923      		and r24,r25
+ 555 01cc 8883      		st Y,r24
+ 556 01ce 00C0      		rjmp .L35
+ 557               	.L38:
+ 558               	.LBE26:
+ 559               	.LBE28:
+ 560               	.LBE29:
+ 104:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     if (option & I2C_OPTION_STOP) {
+ 562               	.LM78:
+ 563 01d0 81FC      		sbrc r8,1
+ 105:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****         stop();
+ 565               	.LM79:
+ 566 01d2 0E94 0000 		call stop
+ 567               	.L40:
+ 107:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c ****     return STATUS_OK;
+ 569               	.LM80:
+ 570 01d6 80E0      		ldi r24,0
+ 571               	.L33:
+ 572               	/* epilogue start */
+ 108:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/i2c_sw.c **** }
+ 574               	.LM81:
+ 575 01d8 DF91      		pop r29
+ 576 01da CF91      		pop r28
+ 577 01dc 1F91      		pop r17
+ 578 01de 0F91      		pop r16
+ 579 01e0 FF90      		pop r15
+ 580 01e2 EF90      		pop r14
+ 581 01e4 DF90      		pop r13
+ 582 01e6 CF90      		pop r12
+ 583 01e8 BF90      		pop r11
+ 584 01ea AF90      		pop r10
+ 585 01ec 9F90      		pop r9
+ 586 01ee 8F90      		pop r8
+ 587 01f0 0895      		ret
+ 601               	.Lscope7:
+ 603               	.Letext0:
+ 604               		.ident	"GCC: (GNU) 4.8.1"
+DEFINED SYMBOLS
+                            *ABS*:00000000 i2c_sw.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:70     .text:00000000 delayI2c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:87     .text:00000008 stop
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:114    .text:0000001c pulseClock
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:146    .text:00000034 readBit
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:187    .text:00000056 putByte
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:269    .text:00000098 i2c_write
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccmkPIP1.s:399    .text:00000120 i2c_read
+
+UNDEFINED SYMBOLS
+delay_us
+i2cSw_pullDownSda
+i2cSw_releaseScl
+i2cSw_releaseSda
+i2cSw_getScl
+i2cSw_pullDownScl
+i2cSw_getSda
+i2cSw_initPins

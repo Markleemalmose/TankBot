@@ -1,0 +1,213 @@
+   1               		.file	"ad7998.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+  71               	.global	ad7998_read
+  73               	ad7998_read:
+   1:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** /******************************************************************************\
+   2:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * @file ad7998.h.
+   3:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * @date 02-Jun-2009
+   4:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * @author Seán Harte
+   5:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  *
+   6:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * Function for reading from ad7997/8 ADC. Look at the datasheet for more
+   7:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * information.
+   8:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** \******************************************************************************/
+   9:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  10:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** /*
+  11:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * TODO: The function below only supports a subset of the features provided by
+  12:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  *       the ADC. For example it could be configured to give a signal when
+  13:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  *       values go above or below a specified threshold etc.
+  14:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  */
+  15:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  16:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** #include "global.h"
+  17:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** #include "ad7998.h"
+  18:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** #include "i2c.h"
+  19:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  20:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  21:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** #define AD7998_ADDRESS                  0x20
+  22:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  23:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** /******************************************************************************\
+  24:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****  * See ad7998.h for documentation of this function.
+  25:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** \******************************************************************************/
+  26:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  27:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** status_t ad7998_read(uint8_t* data, uint8_t channels)
+  28:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** {
+  75               	.LM0:
+  76               	.LFBB1:
+  77 0000 FF92      		push r15
+  78 0002 0F93      		push r16
+  79 0004 1F93      		push r17
+  80 0006 CF93      		push r28
+  81 0008 DF93      		push r29
+  82 000a 00D0      		rcall .
+  83 000c CDB7      		in r28,__SP_L__
+  84 000e DEB7      		in r29,__SP_H__
+  85               	/* prologue: function */
+  86               	/* frame size = 3 */
+  87               	/* stack size = 8 */
+  88               	.L__stack_usage = 8
+  89 0010 8C01      		movw r16,r24
+  90 0012 F62E      		mov r15,r22
+  29:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     status_t status = STATUS_OK;
+  30:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     uint8_t command[3];
+  31:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     uint8_t i;
+  32:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     static uint8_t prevChannels = 0;
+  33:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     static uint8_t numChannels = 0;
+  34:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  35:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     /*
+  36:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****      * The ADC is read in mode 2 using the convert sequence command. The
+  37:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****      * sequence of channels to read is set in the configuration register. This
+  38:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****      * only needs to be done if the current sequence is different to the
+  39:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****      * previous
+  40:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****      */
+  41:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     if (prevChannels != channels) {
+  92               	.LM1:
+  93 0014 8091 0000 		lds r24,prevChannels.1456
+  94 0018 8617      		cp r24,r22
+  95 001a 01F0      		breq .L2
+  42:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         /* Write bitmask of channels to configuration register */
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         command[0] = 0x02;      /* Config register address */
+  97               	.LM2:
+  98 001c 82E0      		ldi r24,lo8(2)
+  99 001e 8983      		std Y+1,r24
+  44:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         command[1] = channels >> 4;
+ 101               	.LM3:
+ 102 0020 862F      		mov r24,r22
+ 103 0022 8295      		swap r24
+ 104 0024 8F70      		andi r24,lo8(15)
+ 105 0026 8A83      		std Y+2,r24
+  45:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         command[2] = ((channels & 0x0F) << 4) | BIT(3); /* 3 = Filter enable */
+ 107               	.LM4:
+ 108 0028 20E1      		ldi r18,lo8(16)
+ 109 002a 629F      		mul r22,r18
+ 110 002c C001      		movw r24,r0
+ 111 002e 1124      		clr __zero_reg__
+ 112 0030 8860      		ori r24,lo8(8)
+ 113 0032 8B83      		std Y+3,r24
+  46:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         
+  47:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         if ((status = i2c_write(AD7998_ADDRESS, command, 3, I2C_OPTION_FULL)) !=
+ 115               	.LM5:
+ 116 0034 27E0      		ldi r18,lo8(7)
+ 117 0036 43E0      		ldi r20,lo8(3)
+ 118 0038 50E0      		ldi r21,0
+ 119 003a BE01      		movw r22,r28
+ 120 003c 6F5F      		subi r22,-1
+ 121 003e 7F4F      		sbci r23,-1
+ 122 0040 80E2      		ldi r24,lo8(32)
+ 123 0042 0E94 0000 		call i2c_write
+ 124 0046 8111      		cpse r24,__zero_reg__
+ 125 0048 00C0      		rjmp .L3
+ 126 004a 28E0      		ldi r18,lo8(8)
+ 127 004c 30E0      		ldi r19,0
+  48:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****                                                                     STATUS_OK) {
+  49:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****             return status;
+  50:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         }
+  51:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  52:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         /* Count how many channels are being converted */
+  53:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         numChannels = 0;
+  54:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         for (i = 0x80; i > 0; i >>= 1) {
+ 129               	.LM6:
+ 130 004e 90E8      		ldi r25,lo8(-128)
+ 131               	.L6:
+  55:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****             if (i & channels) {
+ 133               	.LM7:
+ 134 0050 492F      		mov r20,r25
+ 135 0052 4F21      		and r20,r15
+ 136 0054 01F0      		breq .L4
+  56:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****                 numChannels++;
+ 138               	.LM8:
+ 139 0056 8F5F      		subi r24,lo8(-(1))
+ 140               	.L4:
+  54:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         for (i = 0x80; i > 0; i >>= 1) {
+ 142               	.LM9:
+ 143 0058 9695      		lsr r25
+ 144 005a 2150      		subi r18,1
+ 145 005c 3109      		sbc r19,__zero_reg__
+ 146 005e 2115      		cp r18,__zero_reg__
+ 147 0060 3105      		cpc r19,__zero_reg__
+ 148 0062 01F4      		brne .L6
+ 149 0064 8093 0000 		sts numChannels.1457,r24
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****             }
+  58:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         }
+  59:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         
+  60:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         prevChannels = channels;
+ 151               	.LM10:
+ 152 0068 F092 0000 		sts prevChannels.1456,r15
+ 153               	.L2:
+  61:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     }
+  62:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  63:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     command[0] = 0x70;          /* Convert sequence command */
+ 155               	.LM11:
+ 156 006c 80E7      		ldi r24,lo8(112)
+ 157 006e 8983      		std Y+1,r24
+  64:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  65:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     /* Start converting (note that I2C STOP is not sent) */
+  66:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     if ((status = i2c_write(AD7998_ADDRESS, command, 1,
+ 159               	.LM12:
+ 160 0070 25E0      		ldi r18,lo8(5)
+ 161 0072 41E0      		ldi r20,lo8(1)
+ 162 0074 50E0      		ldi r21,0
+ 163 0076 BE01      		movw r22,r28
+ 164 0078 6F5F      		subi r22,-1
+ 165 007a 7F4F      		sbci r23,-1
+ 166 007c 80E2      		ldi r24,lo8(32)
+ 167 007e 0E94 0000 		call i2c_write
+ 168 0082 8111      		cpse r24,__zero_reg__
+ 169 0084 00C0      		rjmp .L3
+  67:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****                          I2C_OPTION_START | I2C_OPTION_ADDRESS)) != STATUS_OK) {
+  68:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****         return status;
+  69:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     }
+  70:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** 
+  71:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     /* Read back results (a repeated START will be used) */
+  72:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c ****     return i2c_read(AD7998_ADDRESS, data, numChannels * 2, I2C_OPTION_FULL);
+ 171               	.LM13:
+ 172 0086 4091 0000 		lds r20,numChannels.1457
+ 173 008a 50E0      		ldi r21,0
+ 174 008c 440F      		lsl r20
+ 175 008e 551F      		rol r21
+ 176 0090 27E0      		ldi r18,lo8(7)
+ 177 0092 B801      		movw r22,r16
+ 178 0094 80E2      		ldi r24,lo8(32)
+ 179 0096 0E94 0000 		call i2c_read
+ 180               	.L3:
+ 181               	/* epilogue start */
+  73:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/ad7998.c **** }
+ 183               	.LM14:
+ 184 009a 0F90      		pop __tmp_reg__
+ 185 009c 0F90      		pop __tmp_reg__
+ 186 009e 0F90      		pop __tmp_reg__
+ 187 00a0 DF91      		pop r29
+ 188 00a2 CF91      		pop r28
+ 189 00a4 1F91      		pop r17
+ 190 00a6 0F91      		pop r16
+ 191 00a8 FF90      		pop r15
+ 192 00aa 0895      		ret
+ 200               	.Lscope1:
+ 201               		.local	numChannels.1457
+ 202               		.comm	numChannels.1457,1,1
+ 203               		.local	prevChannels.1456
+ 204               		.comm	prevChannels.1456,1,1
+ 206               	.Letext0:
+ 207               		.ident	"GCC: (GNU) 4.8.1"
+ 208               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 ad7998.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:73     .text:00000000 ad7998_read
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccJAIAVv.s:202    .bss:00000001 prevChannels.1456
+                             .bss:00000000 numChannels.1457
+
+UNDEFINED SYMBOLS
+i2c_write
+i2c_read
+__do_clear_bss

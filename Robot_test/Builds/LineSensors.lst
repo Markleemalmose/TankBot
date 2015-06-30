@@ -1,0 +1,1218 @@
+   1               		.file	"LineSensors.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 121               	.global	LineSensors_init
+ 123               	LineSensors_init:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //  LineSensors.c
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //  Robot_test
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //  Created by Mark Lee Malmose on 28/02/15.
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //  Copyright (c) 2015 Mark Lee Malmose. All rights reserved.
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include <avr/io.h>
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include <avr/interrupt.h>
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include <stdlib.h>     // itoa for debugging
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include "LineSensors.h"
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** //#include "Globals.h"
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include "ADC.h"
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include <util/delay.h>
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #include <stdio.h>
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void uart_puts(char *s);    // For debugging
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void uart_putc(unsigned char c);
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void LCD_write_english_string(unsigned char X,unsigned char Y,char *s);
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** int writeToTerminal = 0;
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** // SENSOR
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define SENSOR_1_THRESHOLD 450
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define SENSOR_2_THRESHOLD 600
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define SENSOR_3_THRESHOLD 450
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define SENSOR_4_THRESHOLD 450
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define MCU_DDR DDRC
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define MCU_PIN PC6
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** #define MCU_PORT PORTC
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void LineSensors_init(void)
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** {
+ 125               	.LM0:
+ 126               	.LFBB1:
+ 127               	/* prologue: function */
+ 128               	/* frame size = 0 */
+ 129               	/* stack size = 0 */
+ 130               	.L__stack_usage = 0
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     MCU_DDR = (1<<MCU_PIN);     // Set mcu pin as output
+ 132               	.LM1:
+ 133 0000 80E4      		ldi r24,lo8(64)
+ 134 0002 87B9      		out 0x7,r24
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     MCU_PORT &= ~(1<<MCU_PIN);  // Set mcu pin low
+ 136               	.LM2:
+ 137 0004 4698      		cbi 0x8,6
+ 138 0006 0895      		ret
+ 140               	.Lscope1:
+ 142               	.global	convert
+ 144               	convert:
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** }
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** int convert(void)
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** {
+ 146               	.LM3:
+ 147               	.LFBB2:
+ 148               	/* prologue: function */
+ 149               	/* frame size = 0 */
+ 150               	/* stack size = 0 */
+ 151               	.L__stack_usage = 0
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     ADCSRA |= (1<<ADSC);  // Start conversion
+ 153               	.LM4:
+ 154 0008 8091 7A00 		lds r24,122
+ 155 000c 8064      		ori r24,lo8(64)
+ 156 000e 8093 7A00 		sts 122,r24
+ 157               	.L4:
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     while (ADCSRA &  (1<<ADIF));
+ 159               	.LM5:
+ 160 0012 8091 7A00 		lds r24,122
+ 161 0016 84FD      		sbrc r24,4
+ 162 0018 00C0      		rjmp .L4
+  49:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     // wait until conversion  completes; ADSC=0 means Complete
+  50:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+  51:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     uint8_t lowADCL = ADCL;
+ 164               	.LM6:
+ 165 001a 8091 7800 		lds r24,120
+  52:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     uint16_t adcResult = ADCH<<8 | lowADCL;
+ 167               	.LM7:
+ 168 001e 2091 7900 		lds r18,121
+ 169 0022 90E0      		ldi r25,0
+  53:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+  54:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     return adcResult;
+  55:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** }
+ 171               	.LM8:
+ 172 0024 922B      		or r25,r18
+ 173 0026 0895      		ret
+ 178               	.Lscope2:
+ 179               		.section	.rodata.str1.1,"aMS",@progbits,1
+ 180               	.LC0:
+ 181 0000 2020 2020 		.string	"    "
+ 181      00
+ 182               	.LC1:
+ 183 0005 0D0A 00   		.string	"\r\n"
+ 184               		.text
+ 187               	.global	LineSensors_check_line
+ 189               	LineSensors_check_line:
+  56:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  57:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  58:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** char adc1[4];
+  59:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** char adc2[4];
+  60:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** char adc3[4];
+  61:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** char adc4[4];
+  62:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  63:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** volatile uint8_t binary = 0;
+  64:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+  65:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void LineSensors_check_line(int sensorNumber)
+  66:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** {
+ 191               	.LM9:
+ 192               	.LFBB3:
+ 193               	/* prologue: function */
+ 194               	/* frame size = 0 */
+ 195               	/* stack size = 0 */
+ 196               	.L__stack_usage = 0
+  67:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     uint16_t adcResult = 0;
+  68:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+  69:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     switch (sensorNumber) {
+ 198               	.LM10:
+ 199 0028 8230      		cpi r24,2
+ 200 002a 9105      		cpc r25,__zero_reg__
+ 201 002c 01F0      		breq .L8
+ 202 002e 04F4      		brge .L9
+ 203 0030 0197      		sbiw r24,1
+ 204 0032 01F0      		breq .L10
+ 205 0034 00C0      		rjmp .L7
+ 206               	.L9:
+ 207 0036 8330      		cpi r24,3
+ 208 0038 9105      		cpc r25,__zero_reg__
+ 209 003a 01F4      		brne .+2
+ 210 003c 00C0      		rjmp .L11
+ 211 003e 0497      		sbiw r24,4
+ 212 0040 01F4      		brne .+2
+ 213 0042 00C0      		rjmp .L12
+ 214 0044 00C0      		rjmp .L7
+ 215               	.L10:
+  70:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****         case 1:
+  71:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             ADMUX = 0x41;
+ 217               	.LM11:
+ 218 0046 81E4      		ldi r24,lo8(65)
+ 219 0048 8093 7C00 		sts 124,r24
+  72:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  73:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             adcResult = convert();
+ 221               	.LM12:
+ 222 004c 0E94 0000 		call convert
+  74:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  75:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (adcResult>SENSOR_1_THRESHOLD) {
+ 224               	.LM13:
+ 225 0050 833C      		cpi r24,-61
+ 226 0052 21E0      		ldi r18,1
+ 227 0054 9207      		cpc r25,r18
+ 228 0056 00F0      		brlo .L13
+  76:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary |= 0x01;
+ 230               	.LM14:
+ 231 0058 2091 0000 		lds r18,binary
+ 232 005c 2160      		ori r18,lo8(1)
+ 233 005e 00C0      		rjmp .L32
+ 234               	.L13:
+  77:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             } else {
+  78:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary &= ~0x01;
+ 236               	.LM15:
+ 237 0060 2091 0000 		lds r18,binary
+ 238 0064 2E7F      		andi r18,lo8(-2)
+ 239               	.L32:
+ 240 0066 2093 0000 		sts binary,r18
+  79:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+  80:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  81:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (writeToTerminal)
+ 242               	.LM16:
+ 243 006a 2091 0000 		lds r18,writeToTerminal
+ 244 006e 3091 0000 		lds r19,writeToTerminal+1
+ 245 0072 232B      		or r18,r19
+ 246 0074 01F4      		brne .+2
+ 247 0076 00C0      		rjmp .L7
+ 248               	.LBB22:
+ 249               	.LBB23:
+ 251               	.Ltext1:
+   1:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Copyright (c) 2004,2007 Joerg Wunsch
+   3:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   4:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Portions of documentation Copyright (c) 1990, 1991, 1993, 1994
+   5:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The Regents of the University of California.
+   6:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   7:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    All rights reserved.
+   8:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+   9:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Redistribution and use in source and binary forms, with or without
+  10:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    modification, are permitted provided that the following conditions are met:
+  11:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  12:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Redistributions of source code must retain the above copyright
+  13:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer.
+  14:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  15:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Redistributions in binary form must reproduce the above copyright
+  16:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      notice, this list of conditions and the following disclaimer in
+  17:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the documentation and/or other materials provided with the
+  18:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      distribution.
+  19:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  20:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    * Neither the name of the copyright holders nor the names of
+  21:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contributors may be used to endorse or promote products derived
+  22:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      from this software without specific prior written permission.
+  23:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  24:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  25:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  26:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  27:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  28:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  29:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  30:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  31:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  32:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  33:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  34:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   POSSIBILITY OF SUCH DAMAGE.
+  35:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  36:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****   $Id$
+  37:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+  38:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  39:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef _STDLIB_H_
+  40:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	_STDLIB_H_ 1
+  41:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  42:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ASSEMBLER__
+  43:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  44:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_NULL
+  45:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_size_t
+  46:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __need_wchar_t
+  47:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #include <stddef.h>
+  48:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  49:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ptr_t
+  50:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define __ptr_t void *
+  51:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  52:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  53:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifdef __cplusplus
+  54:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern "C" {
+  55:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  56:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  57:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \file */
+  58:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  59:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \defgroup avr_stdlib <stdlib.h>: General utilities
+  60:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \code #include <stdlib.h> \endcode
+  61:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  62:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     This file declares some basic C macros and functions as
+  63:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     defined by the ISO standard, plus some AVR-specific extensions.
+  64:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+  65:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  66:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@{*/
+  67:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Result type for function div(). */
+  68:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef struct {
+  69:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	int quot;                   /**< The Quotient. */
+  70:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	int rem;                    /**< The Remainder. */
+  71:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** } div_t;
+  72:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  73:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Result type for function ldiv(). */
+  74:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef struct {
+  75:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	long quot;                  /**< The Quotient. */
+  76:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	long rem;                   /**< The Remainder. */
+  77:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** } ldiv_t;
+  78:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  79:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Comparision function type for qsort(), just for convenience. */
+  80:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** typedef int (*__compar_fn_t)(const void *, const void *);
+  81:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  82:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+  83:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  84:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_CONST__
+  85:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_CONST__ __attribute__((__const__))
+  86:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  87:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  88:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_MALLOC__
+  89:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_MALLOC__ __attribute__((__malloc__))
+  90:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  91:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  92:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_NORETURN__
+  93:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_NORETURN__ __attribute__((__noreturn__))
+  94:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  95:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+  96:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __ATTR_PURE__
+  97:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # define __ATTR_PURE__ __attribute__((__pure__))
+  98:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+  99:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 100:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef	__ATTR_GNU_INLINE__
+ 101:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # ifdef  __GNUC_STDC_INLINE__
+ 102:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__   __attribute__((__gnu_inline__))
+ 103:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # else
+ 104:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #  define __ATTR_GNU_INLINE__
+ 105:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** # endif
+ 106:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 107:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 108:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 109:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 110:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The abort() function causes abnormal program termination to occur.
+ 111:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     This realization disables interrupts and jumps to _exit() function
+ 112:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     with argument equal to 1. In the limited AVR environment, execution is
+ 113:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     effectively halted by entering an infinite loop. */
+ 114:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void abort(void) __ATTR_NORETURN__;
+ 115:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 116:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The abs() function computes the absolute value of the integer \c i.
+ 117:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 118:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 119:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int abs(int __i) __ATTR_CONST__;
+ 120:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 121:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	abs(__i) __builtin_abs(__i)
+ 122:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 123:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 124:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** The labs() function computes the absolute value of the long integer
+ 125:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c i.
+ 126:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The abs() and labs() functions are builtins of gcc.
+ 127:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 128:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long labs(long __i) __ATTR_CONST__;
+ 129:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifndef __DOXYGEN__
+ 130:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define labs(__i) __builtin_labs(__i)
+ 131:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #endif
+ 132:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 133:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 134:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The bsearch() function searches an array of \c nmemb objects, the
+ 135:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      initial member of which is pointed to by \c base, for a member
+ 136:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      that matches the object pointed to by \c key.  The size of each
+ 137:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      member of the array is specified by \c size.
+ 138:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 139:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The contents of the array should be in ascending sorted order
+ 140:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      according to the comparison function referenced by \c compar.
+ 141:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The \c compar routine is expected to have two arguments which
+ 142:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      point to the key object and to an array member, in that order,
+ 143:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      and should return an integer less than, equal to, or greater than
+ 144:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      zero if the key object is found, respectively, to be less than,
+ 145:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      to match, or be greater than the array member.
+ 146:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 147:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The bsearch() function returns a pointer to a matching member of
+ 148:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the array, or a null pointer if no match is found.  If two
+ 149:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      members compare as equal, which member is matched is unspecified.
+ 150:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 151:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *bsearch(const void *__key, const void *__base, size_t __nmemb,
+ 152:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 		     size_t __size, int (*__compar)(const void *, const void *));
+ 153:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 154:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /* __divmodhi4 and __divmodsi4 from libgcc.a */
+ 155:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 156:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The div() function computes the value \c num/denom and returns
+ 157:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c div_t that
+ 158:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contains two int members named \c quot and \c rem.
+ 159:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 160:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern div_t div(int __num, int __denom) __asm__("__divmodhi4") __ATTR_CONST__;
+ 161:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 162:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The ldiv() function computes the value \c num/denom and returns
+ 163:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      the quotient and remainder in a structure named \c ldiv_t that
+ 164:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      contains two long integer members named \c quot and \c rem.
+ 165:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 166:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern ldiv_t ldiv(long __num, long __denom) __asm__("__divmodsi4") __ATTR_CONST__;
+ 167:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 168:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 169:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The qsort() function is a modified partition-exchange sort, or
+ 170:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      quicksort.
+ 171:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 172:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The qsort() function sorts an array of \c nmemb objects, the
+ 173:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      initial member of which is pointed to by \c base.  The size of
+ 174:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      each object is specified by \c size.  The contents of the array
+ 175:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      base are sorted in ascending order according to a comparison
+ 176:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      function pointed to by \c compar, which requires two arguments
+ 177:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      pointing to the objects being compared.
+ 178:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 179:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The comparison function must return an integer less than, equal
+ 180:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      to, or greater than zero if the first argument is considered to
+ 181:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      be respectively less than, equal to, or greater than the second.
+ 182:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 183:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void qsort(void *__base, size_t __nmemb, size_t __size,
+ 184:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 		  __compar_fn_t __compar);
+ 185:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 186:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 187:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtol() function converts the string in \c nptr to a long
+ 188:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     value.  The conversion is done according to the given base, which
+ 189:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     must be between 2 and 36 inclusive, or be the special value 0.
+ 190:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 191:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 192:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 193:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 194:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 195:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 196:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 197:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 198:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The remainder of the string is converted to a long value in the
+ 199:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     obvious manner, stopping at the first character which is not a
+ 200:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     valid digit in the given base.  (In bases above 10, the letter \c 'A'
+ 201:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     in either upper or lower case represents 10, \c 'B' represents 11,
+ 202:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     and so forth, with \c 'Z' representing 35.)
+ 203:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 204:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If \c endptr is not NULL, strtol() stores the address of the first
+ 205:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 206:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     however, strtol() stores the original value of \c nptr in \c
+ 207:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 208:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 209:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 210:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtol() function returns the result of the conversion, unless
+ 211:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the value would underflow or overflow.  If no conversion could be
+ 212:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     performed, 0 is returned.  If an overflow or underflow occurs, \c
+ 213:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE" and the function return value
+ 214:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     is clamped to \c LONG_MIN or \c LONG_MAX, respectively.
+ 215:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 216:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long strtol(const char *__nptr, char **__endptr, int __base);
+ 217:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 218:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 219:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtoul() function converts the string in \c nptr to an
+ 220:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     unsigned long value.  The conversion is done according to the
+ 221:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     given base, which must be between 2 and 36 inclusive, or be the
+ 222:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     special value 0.
+ 223:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 224:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The string may begin with an arbitrary amount of white space (as
+ 225:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     determined by isspace()) followed by a single optional \c '+' or \c '-'
+ 226:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     sign.  If \c base is zero or 16, the string may then include a
+ 227:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c "0x" prefix, and the number will be read in base 16; otherwise,
+ 228:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     a zero base is taken as 10 (decimal) unless the next character is
+ 229:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     \c '0', in which case it is taken as 8 (octal).
+ 230:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 231:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The remainder of the string is converted to an unsigned long value
+ 232:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     in the obvious manner, stopping at the first character which is
+ 233:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     not a valid digit in the given base.  (In bases above 10, the
+ 234:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     letter \c 'A' in either upper or lower case represents 10, \c 'B'
+ 235:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     represents 11, and so forth, with \c 'Z' representing 35.)
+ 236:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 237:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If \c endptr is not NULL, strtoul() stores the address of the first
+ 238:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     invalid character in \c *endptr.  If there were no digits at all,
+ 239:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     however, strtoul() stores the original value of \c nptr in \c
+ 240:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     *endptr.  (Thus, if \c *nptr is not \c '\\0' but \c **endptr is \c '\\0'
+ 241:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     on return, the entire string was valid.)
+ 242:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 243:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The strtoul() function return either the result of the conversion
+ 244:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     or, if there was a leading minus sign, the negation of the result
+ 245:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     of the conversion, unless the original (non-negated) value would
+ 246:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     overflow; in the latter case, strtoul() returns ULONG_MAX, and \c
+ 247:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     errno is set to \ref avr_errno "ERANGE".  If no conversion could 
+ 248:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     be performed, 0 is returned.
+ 249:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 250:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern unsigned long strtoul(const char *__nptr, char **__endptr, int __base);
+ 251:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 252:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 253:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The atol() function converts the initial portion of the string
+ 254:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     pointed to by \p s to long integer representation. In contrast to
+ 255:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 256:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****         \code strtol(s, (char **)NULL, 10); \endcode
+ 257:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 258:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 259:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 260:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     stack) and works more quickly.
+ 261:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 262:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern long atol(const char *__s) __ATTR_PURE__;
+ 263:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 264:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 265:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     The atoi() function converts the initial portion of the string
+ 266:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     pointed to by \p s to integer representation. In contrast to
+ 267:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 268:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****         \code (int)strtol(s, (char **)NULL, 10); \endcode
+ 269:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 270:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     this function does not detect overflow (\c errno is not changed and
+ 271:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     the result value is not predictable), uses smaller memory (flash and
+ 272:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     stack) and works more quickly.
+ 273:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 274:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int atoi(const char *__s) __ATTR_PURE__;
+ 275:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 276:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 277:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The exit() function terminates the application.  Since there is no
+ 278:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    environment to return to, \c status is ignored, and code execution
+ 279:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    will eventually reach an infinite loop, thereby effectively halting
+ 280:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    all code processing.  Before entering the infinite loop, interrupts
+ 281:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    are globally disabled.
+ 282:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 283:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    In a C++ context, global destructors will be called before halting
+ 284:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    execution.
+ 285:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 286:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void exit(int __status) __ATTR_NORETURN__;
+ 287:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 288:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 289:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The malloc() function allocates \c size bytes of memory.
+ 290:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    If malloc() fails, a NULL pointer is returned.
+ 291:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 292:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Note that malloc() does \e not initialize the returned memory to
+ 293:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    zero bytes.
+ 294:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 295:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    See the chapter about \ref malloc "malloc() usage" for implementation
+ 296:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    details.
+ 297:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 298:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *malloc(size_t __size) __ATTR_MALLOC__;
+ 299:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 300:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 301:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The free() function causes the allocated memory referenced by \c
+ 302:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    ptr to be made available for future allocations.  If \c ptr is
+ 303:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    NULL, no action occurs.
+ 304:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 305:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void free(void *__ptr);
+ 306:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 307:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 308:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 309:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 310:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern size_t __malloc_margin;
+ 311:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 312:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 313:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 314:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 315:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *__malloc_heap_start;
+ 316:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 317:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 318:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() \ref malloc_tunables "tunable".
+ 319:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 320:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *__malloc_heap_end;
+ 321:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 322:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 323:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Allocate \c nele elements of \c size each.  Identical to calling
+ 324:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c malloc() using <tt>nele * size</tt> as argument, except the
+ 325:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    allocated memory will be cleared to zero.
+ 326:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 327:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *calloc(size_t __nele, size_t __size) __ATTR_MALLOC__;
+ 328:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 329:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 330:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The realloc() function tries to change the size of the region
+ 331:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    allocated at \c ptr to the new \c size value.  It returns a
+ 332:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    pointer to the new region.  The returned pointer might be the
+ 333:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    same as the old pointer, or a pointer to a completely different
+ 334:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    region.
+ 335:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 336:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The contents of the returned region up to either the old or the new
+ 337:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    size value (whatever is less) will be identical to the contents of
+ 338:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    the old region, even in case a new region had to be allocated.
+ 339:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 340:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    It is acceptable to pass \c ptr as NULL, in which case realloc()
+ 341:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    will behave identical to malloc().
+ 342:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 343:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    If the new memory cannot be allocated, realloc() returns NULL, and
+ 344:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    the region at \c ptr will not be changed.
+ 345:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 346:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void *realloc(void *__ptr, size_t __size) __ATTR_MALLOC__;
+ 347:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 348:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern double strtod(const char *__nptr, char **__endptr);
+ 349:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 350:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern double atof(const char *__nptr);
+ 351:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 352:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** Highest number that can be generated by rand(). */
+ 353:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #define	RAND_MAX 0x7FFF
+ 354:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 355:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 356:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The rand() function computes a sequence of pseudo-random integers in the
+ 357:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      range of 0 to \c RAND_MAX (as defined by the header file <stdlib.h>).
+ 358:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 359:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      The srand() function sets its argument \c seed as the seed for a new
+ 360:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      sequence of pseudo-random numbers to be returned by rand().  These
+ 361:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      sequences are repeatable by calling srand() with the same seed value.
+ 362:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 363:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      If no seed value is provided, the functions are automatically seeded with
+ 364:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      a value of 1.
+ 365:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 366:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      In compliance with the C standard, these functions operate on
+ 367:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      \c int arguments.  Since the underlying algorithm already uses
+ 368:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      32-bit calculations, this causes a loss of precision.  See
+ 369:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      \c random() for an alternate set of functions that retains full
+ 370:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****      32-bit precision.
+ 371:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 372:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int rand(void);
+ 373:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 374:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Pseudo-random number generator seeding; see rand().
+ 375:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 376:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern void srand(unsigned int __seed);
+ 377:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 378:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 379:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Variant of rand() that stores the context in the user-supplied
+ 380:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    variable located at \c ctx instead of a static library variable
+ 381:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    so the function becomes re-entrant.
+ 382:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 383:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern int rand_r(unsigned long *__ctx);
+ 384:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@}*/
+ 385:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 386:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /*@{*/
+ 387:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /** \name Non-standard (i.e. non-ISO C) functions.
+ 388:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****  \ingroup avr_stdlib
+ 389:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 390:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** /**
+ 391:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \brief Convert an integer to a string.
+ 392:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 393:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The function itoa() converts the integer value from \c val into an
+ 394:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    ASCII representation that will be stored under \c s.  The caller
+ 395:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    is responsible for providing sufficient storage in \c s.
+ 396:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 397:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \note The minimal size of the buffer \c s depends on the choice of
+ 398:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    radix. For example, if the radix is 2 (binary), you need to supply a buffer
+ 399:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    with a minimal length of 8 * sizeof (int) + 1 characters, i.e. one
+ 400:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    character for each bit plus one for the string terminator. Using a larger
+ 401:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    radix will require a smaller minimal buffer size.
+ 402:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 403:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \warning If the buffer is too small, you risk a buffer overflow.
+ 404:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 405:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    Conversion is done using the \c radix as base, which may be a
+ 406:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    number between 2 (binary conversion) and up to 36.  If \c radix
+ 407:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    is greater than 10, the next digit after \c '9' will be the letter
+ 408:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    \c 'a'.
+ 409:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     
+ 410:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     If radix is 10 and val is negative, a minus sign will be prepended.
+ 411:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 
+ 412:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****    The itoa() function returns the pointer passed as \c s.
+ 413:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** */
+ 414:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #ifdef  __DOXYGEN__
+ 415:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern char *itoa(int val, char *s, int radix);
+ 416:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** #else
+ 417:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** extern __inline__ __ATTR_GNU_INLINE__
+ 418:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** char *itoa (int __val, char *__s, int __radix)
+ 419:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** {
+ 420:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     if (!__builtin_constant_p (__radix)) {
+ 421:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	extern char *__itoa (int, char *, int);
+ 422:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __itoa (__val, __s, __radix);
+ 423:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     } else if (__radix < 2 || __radix > 36) {
+ 424:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	*__s = 0;
+ 425:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __s;
+ 426:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h ****     } else {
+ 427:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	extern char *__itoa_ncheck (int, char *, unsigned char);
+ 428:/usr/local/CrossPack-AVR-20131216/avr/include/stdlib.h **** 	return __itoa_ncheck (__val, __s, __radix);
+ 253               	.LM17:
+ 254 0078 4AE0      		ldi r20,lo8(10)
+ 255 007a 60E0      		ldi r22,lo8(adc1)
+ 256 007c 70E0      		ldi r23,hi8(adc1)
+ 257 007e 0E94 0000 		call __itoa_ncheck
+ 258               	.LBE23:
+ 259               	.LBE22:
+ 261               	.Ltext2:
+  82:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             {
+  83:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 itoa(adcResult, adc1, 10);
+  84:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts(adc1);
+ 263               	.LM18:
+ 264 0082 80E0      		ldi r24,lo8(adc1)
+ 265 0084 90E0      		ldi r25,hi8(adc1)
+ 266 0086 00C0      		rjmp .L37
+ 267               	.L8:
+  85:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts("    ");
+  86:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+  87:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  88:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             break;
+  89:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  90:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****         case 2:
+  91:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             ADMUX = 0x42;
+ 269               	.LM19:
+ 270 0088 82E4      		ldi r24,lo8(66)
+ 271 008a 8093 7C00 		sts 124,r24
+  92:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  93:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             adcResult = convert();
+ 273               	.LM20:
+ 274 008e 0E94 0000 		call convert
+  94:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+  95:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (adcResult>SENSOR_2_THRESHOLD) {
+ 276               	.LM21:
+ 277 0092 8935      		cpi r24,89
+ 278 0094 22E0      		ldi r18,2
+ 279 0096 9207      		cpc r25,r18
+ 280 0098 00F0      		brlo .L16
+  96:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary |= 0x02;
+ 282               	.LM22:
+ 283 009a 2091 0000 		lds r18,binary
+ 284 009e 2260      		ori r18,lo8(2)
+ 285 00a0 00C0      		rjmp .L33
+ 286               	.L16:
+  97:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             } else {
+  98:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary &= ~0x02;
+ 288               	.LM23:
+ 289 00a2 2091 0000 		lds r18,binary
+ 290 00a6 2D7F      		andi r18,lo8(-3)
+ 291               	.L33:
+ 292 00a8 2093 0000 		sts binary,r18
+  99:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 100:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 101:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (writeToTerminal)
+ 294               	.LM24:
+ 295 00ac 2091 0000 		lds r18,writeToTerminal
+ 296 00b0 3091 0000 		lds r19,writeToTerminal+1
+ 297 00b4 232B      		or r18,r19
+ 298 00b6 01F4      		brne .+2
+ 299 00b8 00C0      		rjmp .L7
+ 300               	.LBB24:
+ 301               	.LBB25:
+ 303               	.Ltext3:
+ 305               	.LM25:
+ 306 00ba 4AE0      		ldi r20,lo8(10)
+ 307 00bc 60E0      		ldi r22,lo8(adc2)
+ 308 00be 70E0      		ldi r23,hi8(adc2)
+ 309 00c0 0E94 0000 		call __itoa_ncheck
+ 310               	.LBE25:
+ 311               	.LBE24:
+ 313               	.Ltext4:
+ 102:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             {
+ 103:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 itoa(adcResult, adc2, 10);
+ 104:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts(adc2);
+ 315               	.LM26:
+ 316 00c4 80E0      		ldi r24,lo8(adc2)
+ 317 00c6 90E0      		ldi r25,hi8(adc2)
+ 318 00c8 00C0      		rjmp .L37
+ 319               	.L11:
+ 105:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts("    ");
+ 106:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 107:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+ 108:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             break;
+ 109:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 110:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****         case 3:
+ 111:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             ADMUX = 0x43;
+ 321               	.LM27:
+ 322 00ca 83E4      		ldi r24,lo8(67)
+ 323 00cc 8093 7C00 		sts 124,r24
+ 112:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 113:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             adcResult = convert();
+ 325               	.LM28:
+ 326 00d0 0E94 0000 		call convert
+ 114:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 115:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (adcResult>SENSOR_3_THRESHOLD) {
+ 328               	.LM29:
+ 329 00d4 833C      		cpi r24,-61
+ 330 00d6 21E0      		ldi r18,1
+ 331 00d8 9207      		cpc r25,r18
+ 332 00da 00F0      		brlo .L19
+ 116:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary |= 0x04;
+ 334               	.LM30:
+ 335 00dc 2091 0000 		lds r18,binary
+ 336 00e0 2460      		ori r18,lo8(4)
+ 337 00e2 00C0      		rjmp .L34
+ 338               	.L19:
+ 117:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             } else {
+ 118:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary &= ~0x04;
+ 340               	.LM31:
+ 341 00e4 2091 0000 		lds r18,binary
+ 342 00e8 2B7F      		andi r18,lo8(-5)
+ 343               	.L34:
+ 344 00ea 2093 0000 		sts binary,r18
+ 119:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 120:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 121:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (writeToTerminal)
+ 346               	.LM32:
+ 347 00ee 2091 0000 		lds r18,writeToTerminal
+ 348 00f2 3091 0000 		lds r19,writeToTerminal+1
+ 349 00f6 232B      		or r18,r19
+ 350 00f8 01F0      		breq .L7
+ 351               	.LBB26:
+ 352               	.LBB27:
+ 354               	.Ltext5:
+ 356               	.LM33:
+ 357 00fa 4AE0      		ldi r20,lo8(10)
+ 358 00fc 60E0      		ldi r22,lo8(adc3)
+ 359 00fe 70E0      		ldi r23,hi8(adc3)
+ 360 0100 0E94 0000 		call __itoa_ncheck
+ 361               	.LBE27:
+ 362               	.LBE26:
+ 364               	.Ltext6:
+ 122:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             {
+ 123:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 itoa(adcResult, adc3, 10);
+ 124:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts(adc3);
+ 366               	.LM34:
+ 367 0104 80E0      		ldi r24,lo8(adc3)
+ 368 0106 90E0      		ldi r25,hi8(adc3)
+ 369               	.L37:
+ 370 0108 0E94 0000 		call uart_puts
+ 125:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts("    ");
+ 372               	.LM35:
+ 373 010c 80E0      		ldi r24,lo8(.LC0)
+ 374 010e 90E0      		ldi r25,hi8(.LC0)
+ 375 0110 00C0      		rjmp .L36
+ 376               	.L12:
+ 126:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 127:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 128:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             break;
+ 129:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 130:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****         case 4:
+ 131:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             ADMUX = 0x40;
+ 378               	.LM36:
+ 379 0112 80E4      		ldi r24,lo8(64)
+ 380 0114 8093 7C00 		sts 124,r24
+ 132:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 133:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 134:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             adcResult = convert();
+ 382               	.LM37:
+ 383 0118 0E94 0000 		call convert
+ 135:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 136:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (adcResult>SENSOR_4_THRESHOLD) {
+ 385               	.LM38:
+ 386 011c 833C      		cpi r24,-61
+ 387 011e 21E0      		ldi r18,1
+ 388 0120 9207      		cpc r25,r18
+ 389 0122 00F0      		brlo .L21
+ 137:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary |= 0x08;
+ 391               	.LM39:
+ 392 0124 2091 0000 		lds r18,binary
+ 393 0128 2860      		ori r18,lo8(8)
+ 394 012a 00C0      		rjmp .L35
+ 395               	.L21:
+ 138:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             } else {
+ 139:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 binary &= ~0x08;
+ 397               	.LM40:
+ 398 012c 2091 0000 		lds r18,binary
+ 399 0130 277F      		andi r18,lo8(-9)
+ 400               	.L35:
+ 401 0132 2093 0000 		sts binary,r18
+ 140:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 141:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 142:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             if (writeToTerminal)
+ 403               	.LM41:
+ 404 0136 2091 0000 		lds r18,writeToTerminal
+ 405 013a 3091 0000 		lds r19,writeToTerminal+1
+ 406 013e 232B      		or r18,r19
+ 407 0140 01F0      		breq .L7
+ 408               	.LBB28:
+ 409               	.LBB29:
+ 411               	.Ltext7:
+ 413               	.LM42:
+ 414 0142 4AE0      		ldi r20,lo8(10)
+ 415 0144 60E0      		ldi r22,lo8(adc4)
+ 416 0146 70E0      		ldi r23,hi8(adc4)
+ 417 0148 0E94 0000 		call __itoa_ncheck
+ 418               	.LBE29:
+ 419               	.LBE28:
+ 421               	.Ltext8:
+ 143:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             {
+ 144:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 itoa(adcResult, adc4, 10);
+ 145:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts(adc4);
+ 423               	.LM43:
+ 424 014c 80E0      		ldi r24,lo8(adc4)
+ 425 014e 90E0      		ldi r25,hi8(adc4)
+ 426 0150 0E94 0000 		call uart_puts
+ 146:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****                 uart_puts("\r\n");
+ 428               	.LM44:
+ 429 0154 80E0      		ldi r24,lo8(.LC1)
+ 430 0156 90E0      		ldi r25,hi8(.LC1)
+ 431               	.L36:
+ 432 0158 0E94 0000 		call uart_puts
+ 433               	.L7:
+ 434               	.LBB30:
+ 435               	.LBB31:
+ 437               	.Ltext9:
+   1:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /* Copyright (c) 2002, Marek Michalkiewicz
+   2:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Copyright (c) 2004,2005,2007 Joerg Wunsch
+   3:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Copyright (c) 2007  Florin-Viorel Petrov
+   4:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    All rights reserved.
+   5:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+   6:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Redistribution and use in source and binary forms, with or without
+   7:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    modification, are permitted provided that the following conditions are met:
+   8:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+   9:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    * Redistributions of source code must retain the above copyright
+  10:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer.
+  11:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  12:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    * Redistributions in binary form must reproduce the above copyright
+  13:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      notice, this list of conditions and the following disclaimer in
+  14:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      the documentation and/or other materials provided with the
+  15:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      distribution.
+  16:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  17:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    * Neither the name of the copyright holders nor the names of
+  18:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      contributors may be used to endorse or promote products derived
+  19:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****      from this software without specific prior written permission.
+  20:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  21:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  22:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  23:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  24:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  25:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  26:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  27:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  28:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  29:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  30:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  31:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   POSSIBILITY OF SUCH DAMAGE. */
+  32:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  33:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /* $Id$ */
+  34:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  35:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #ifndef _UTIL_DELAY_H_
+  36:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #define _UTIL_DELAY_H_ 1
+  37:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  38:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #ifndef __HAS_DELAY_CYCLES
+  39:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #define __HAS_DELAY_CYCLES 1
+  40:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+  41:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  42:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #include <inttypes.h>
+  43:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #include <util/delay_basic.h>
+  44:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #include <math.h>
+  45:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  46:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /** \file */
+  47:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /** \defgroup util_delay <util/delay.h>: Convenience functions for busy-wait delay loops
+  48:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     \code
+  49:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     #define F_CPU 1000000UL  // 1 MHz
+  50:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     //#define F_CPU 14.7456E6
+  51:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     #include <util/delay.h>
+  52:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     \endcode
+  53:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  54:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     \note As an alternative method, it is possible to pass the
+  55:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     F_CPU macro down to the compiler from the Makefile.
+  56:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     Obviously, in that case, no \c \#define statement should be
+  57:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     used.
+  58:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  59:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     The functions in this header file are wrappers around the basic
+  60:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     busy-wait functions from <util/delay_basic.h>.  They are meant as
+  61:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     convenience functions where actual time values can be specified
+  62:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     rather than a number of cycles to wait for.  The idea behind is
+  63:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     that compile-time constant expressions will be eliminated by
+  64:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     compiler optimization so floating-point expressions can be used
+  65:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     to calculate the number of delay cycles needed based on the CPU
+  66:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     frequency passed by the macro F_CPU.
+  67:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  68:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     \note In order for these functions to work as intended, compiler
+  69:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     optimizations <em>must</em> be enabled, and the delay time
+  70:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     <em>must</em> be an expression that is a known constant at
+  71:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     compile-time.  If these requirements are not met, the resulting
+  72:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     delay will be much longer (and basically unpredictable), and
+  73:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     applications that otherwise do not use floating-point calculations
+  74:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     will experience severe code bloat by the floating-point library
+  75:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     routines linked into the application.
+  76:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  77:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     The functions available allow the specification of microsecond, and
+  78:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     millisecond delays directly, using the application-supplied macro
+  79:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     F_CPU as the CPU clock frequency (in Hertz).
+  80:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  81:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** */
+  82:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  83:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #if !defined(__DOXYGEN__)
+  84:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** static inline void _delay_us(double __us) __attribute__((always_inline));
+  85:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** static inline void _delay_ms(double __ms) __attribute__((always_inline));
+  86:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+  87:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  88:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #ifndef F_CPU
+  89:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /* prevent compiler error by supplying a default */
+  90:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** # warning "F_CPU not defined for <util/delay.h>"
+  91:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** # define F_CPU 1000000UL
+  92:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+  93:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  94:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #ifndef __OPTIMIZE__
+  95:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** # warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+  96:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+  97:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+  98:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+  99:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 100:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 101:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #  include <math.h>
+ 102:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+ 103:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 104:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /**
+ 105:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    \ingroup util_delay
+ 106:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 107:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Perform a delay of \c __ms milliseconds, using _delay_loop_2().
+ 108:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 109:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 110:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 111:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 112:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    The maximal possible delay is 262.14 ms / F_CPU in MHz.
+ 113:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 114:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    When the user request delay which exceed the maximum possible one,
+ 115:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    _delay_ms() provides a decreased resolution functionality. In this
+ 116:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    mode _delay_ms() will work with a resolution of 1/10 ms, providing
+ 117:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    delays up to 6.5535 seconds (independent from CPU frequency).  The
+ 118:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    user will not be informed about decreased resolution.
+ 119:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 120:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles(unsigned long)
+ 121:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 ms/ F_CPU in MHz. For
+ 122:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflows results in
+ 123:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    no delay i.e., 0ms.
+ 124:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 125:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Conversion of __us into clock cycles may not always result in integer.
+ 126:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    By default, the clock cycles rounded up to next integer. This ensures that
+ 127:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    the user gets atleast __us microseconds of delay.
+ 128:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 129:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Alternatively, user can define __DELAY_ROUND_DOWN__ and __DELAY_ROUND_CLOSEST__
+ 130:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    to round down and round to closest integer.
+ 131:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 132:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Note: The new implementation of _delay_ms(double __ms) with 
+ 133:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     __builtin_avr_delay_cycles(unsigned long) support is not backward compatible. 
+ 134:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    User can define __DELAY_BACKWARD_COMPATIBLE__ to get a backward compatible delay.
+ 135:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Also, the backward compatible
+ 136:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    algorithm will be chosen if the code is compiled in a <em>freestanding
+ 137:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    environment</em> (GCC option \c -ffreestanding), as the math functions
+ 138:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    required for rounding are not available to the compiler then.
+ 139:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 140:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****  */
+ 141:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** void
+ 142:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** _delay_ms(double __ms)
+ 143:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** {
+ 144:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	double __tmp ; 
+ 145:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 146:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 147:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 148:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 149:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 150:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e3) * __ms;
+ 151:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 152:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 153:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 154:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 155:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 156:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 157:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 158:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#else
+ 159:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		//round up by default
+ 160:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 161:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#endif
+ 162:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 163:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 164:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 165:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #else
+ 166:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	uint16_t __ticks;
+ 167:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 4e3) * __ms;
+ 168:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	if (__tmp < 1.0)
+ 169:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks = 1;
+ 170:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	else if (__tmp > 65535)
+ 171:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	{
+ 172:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		//	__ticks = requested delay in 1/10 ms
+ 173:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks = (uint16_t) (__ms * 10.0);
+ 174:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		while(__ticks)
+ 175:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		{
+ 176:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 			// wait 1/10 ms
+ 177:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 			_delay_loop_2(((F_CPU) / 4e3) / 10);
+ 178:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 			__ticks --;
+ 179:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		}
+ 180:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		return;
+ 181:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	}
+ 182:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	else
+ 183:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks = (uint16_t)__tmp;
+ 184:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	_delay_loop_2(__ticks);
+ 185:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #endif
+ 186:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** }
+ 187:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 188:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** /**
+ 189:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    \ingroup util_delay
+ 190:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 191:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Perform a delay of \c __us microseconds, using _delay_loop_1().
+ 192:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 193:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    The macro F_CPU is supposed to be defined to a
+ 194:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    constant defining the CPU clock frequency (in Hertz).
+ 195:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 196:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    The maximal possible delay is 768 us / F_CPU in MHz.
+ 197:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 198:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    If the user requests a delay greater than the maximal possible one,
+ 199:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    _delay_us() will automatically call _delay_ms() instead.  The user
+ 200:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    will not be informed about this case.
+ 201:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 202:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    If the avr-gcc toolchain has __builtin_avr_delay_cycles(unsigned long)
+ 203:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    support, maximal possible delay is 4294967.295 us/ F_CPU in MHz. For
+ 204:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    values greater than the maximal possible delay, overflow results in
+ 205:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    no delay i.e., 0us.
+ 206:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   
+ 207:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Conversion of __us into clock cycles may not always result in integer.
+ 208:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    By default, the clock cycles rounded up to next integer. This ensures that
+ 209:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    the user gets atleast __us microseconds of delay.
+ 210:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 211:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Alternatively, user can define __DELAY_ROUND_DOWN__ and __DELAY_ROUND_CLOSEST__
+ 212:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    to round down and round to closest integer.
+ 213:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****  
+ 214:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Note: The new implementation of _delay_us(double __us) with 
+ 215:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****     __builtin_avr_delay_cycles(unsigned long) support is not backward compatible.
+ 216:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    User can define __DELAY_BACKWARD_COMPATIBLE__ to get a backward compatible delay.
+ 217:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    Also, the backward compatible
+ 218:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    algorithm will be chosen if the code is compiled in a <em>freestanding
+ 219:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    environment</em> (GCC option \c -ffreestanding), as the math functions
+ 220:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****    required for rounding are not available to the compiler then.
+ 221:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 222:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****  */
+ 223:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** void
+ 224:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** _delay_us(double __us)
+ 225:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** {
+ 226:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	double __tmp ; 
+ 227:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** #if __HAS_DELAY_CYCLES && defined(__OPTIMIZE__) && \
+ 228:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   !defined(__DELAY_BACKWARD_COMPATIBLE__) &&	   \
+ 229:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h ****   __STDC_HOSTED__
+ 230:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	uint32_t __ticks_dc;
+ 231:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	extern void __builtin_avr_delay_cycles(unsigned long);
+ 232:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	__tmp = ((F_CPU) / 1e6) * __us;
+ 233:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 234:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#if defined(__DELAY_ROUND_DOWN__)
+ 235:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)fabs(__tmp);
+ 236:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 237:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#elif defined(__DELAY_ROUND_CLOSEST__)
+ 238:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(fabs(__tmp)+0.5);
+ 239:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 240:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#else
+ 241:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		//round up by default
+ 242:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+ 243:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	#endif
+ 244:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 
+ 245:/usr/local/CrossPack-AVR-20131216/avr/include/util/delay.h **** 	__builtin_avr_delay_cycles(__ticks_dc);
+ 439               	.LM45:
+ 440 015c 8CE5      		ldi r24,lo8(92)
+ 441 015e 8A95      		1: dec r24
+ 442 0160 01F4      		brne 1b
+ 443 0162 0000      		nop
+ 444 0164 0895      		ret
+ 445               	.LBE31:
+ 446               	.LBE30:
+ 448               	.Lscope3:
+ 450               	.global	LineSensors_check_all
+ 452               	LineSensors_check_all:
+ 454               	.Ltext10:
+ 147:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             }
+ 148:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 149:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             break;
+ 150:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             
+ 151:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****         default:
+ 152:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****             break;
+ 153:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     }
+ 154:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     _delay_us(15);
+ 155:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+ 156:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** }
+ 157:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+ 158:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** void LineSensors_check_all(void)
+ 159:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** {
+ 456               	.LM46:
+ 457               	.LFBB4:
+ 458               	/* prologue: function */
+ 459               	/* frame size = 0 */
+ 460               	/* stack size = 0 */
+ 461               	.L__stack_usage = 0
+ 160:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     MCU_PORT |= (1<<MCU_PIN);   // Set mcu pin high
+ 463               	.LM47:
+ 464 0166 469A      		sbi 0x8,6
+ 465               	.LBB32:
+ 466               	.LBB33:
+ 468               	.Ltext11:
+ 470               	.LM48:
+ 471 0168 89E9      		ldi r24,lo8(921)
+ 472 016a 93E0      		ldi r25,hi8(921)
+ 473 016c 0197      		1: sbiw r24,1
+ 474 016e 01F4      		brne 1b
+ 475 0170 00C0      		rjmp .
+ 476               	.LBE33:
+ 477               	.LBE32:
+ 479               	.Ltext12:
+ 161:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     _delay_us(200);
+ 162:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     LineSensors_check_line(1);
+ 481               	.LM49:
+ 482 0172 81E0      		ldi r24,lo8(1)
+ 483 0174 90E0      		ldi r25,0
+ 484 0176 0E94 0000 		call LineSensors_check_line
+ 163:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     LineSensors_check_line(2);
+ 486               	.LM50:
+ 487 017a 82E0      		ldi r24,lo8(2)
+ 488 017c 90E0      		ldi r25,0
+ 489 017e 0E94 0000 		call LineSensors_check_line
+ 164:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     LineSensors_check_line(3);
+ 491               	.LM51:
+ 492 0182 83E0      		ldi r24,lo8(3)
+ 493 0184 90E0      		ldi r25,0
+ 494 0186 0E94 0000 		call LineSensors_check_line
+ 165:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     LineSensors_check_line(4);
+ 496               	.LM52:
+ 497 018a 84E0      		ldi r24,lo8(4)
+ 498 018c 90E0      		ldi r25,0
+ 499 018e 0E94 0000 		call LineSensors_check_line
+ 166:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     //_delay_us(1000);
+ 167:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     MCU_PORT &= ~(1<<MCU_PIN);  // Set mcu pin low
+ 501               	.LM53:
+ 502 0192 4698      		cbi 0x8,6
+ 503 0194 0895      		ret
+ 505               	.Lscope4:
+ 507               	.global	LineSensors_value
+ 509               	LineSensors_value:
+ 168:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+ 169:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     
+ 170:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** }
+ 171:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+ 172:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** 
+ 173:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** int LineSensors_value(void)
+ 174:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** {
+ 511               	.LM54:
+ 512               	.LFBB5:
+ 513               	/* prologue: function */
+ 514               	/* frame size = 0 */
+ 515               	/* stack size = 0 */
+ 516               	.L__stack_usage = 0
+ 175:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c ****     return binary;
+ 518               	.LM55:
+ 519 0196 8091 0000 		lds r24,binary
+ 176:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/LineSensors.c **** }
+ 521               	.LM56:
+ 522 019a 90E0      		ldi r25,0
+ 523 019c 0895      		ret
+ 525               	.Lscope5:
+ 526               	.global	binary
+ 527               		.section .bss
+ 530               	binary:
+ 531 0000 00        		.zero	1
+ 532               		.comm	adc4,4,1
+ 533               		.comm	adc3,4,1
+ 534               		.comm	adc2,4,1
+ 535               		.comm	adc1,4,1
+ 536               	.global	writeToTerminal
+ 539               	writeToTerminal:
+ 540 0001 0000      		.zero	2
+ 547               		.text
+ 549               	.Letext0:
+ 550               		.ident	"GCC: (GNU) 4.8.1"
+ 551               	.global __do_copy_data
+ 552               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 LineSensors.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:123    .text:00000000 LineSensors_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:144    .text:00000008 convert
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:189    .text:00000028 LineSensors_check_line
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:530    .bss:00000000 binary
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:539    .bss:00000001 writeToTerminal
+                            *COM*:00000004 adc1
+                            *COM*:00000004 adc2
+                            *COM*:00000004 adc3
+                            *COM*:00000004 adc4
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:452    .text:00000166 LineSensors_check_all
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccK0Zli3.s:509    .text:00000196 LineSensors_value
+
+UNDEFINED SYMBOLS
+__itoa_ncheck
+uart_puts
+__do_copy_data
+__do_clear_bss

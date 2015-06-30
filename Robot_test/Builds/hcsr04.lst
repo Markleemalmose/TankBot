@@ -1,0 +1,753 @@
+   1               		.file	"hcsr04.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 111               	.global	timer_init
+ 113               	timer_init:
+   1:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /* -*- mode: c; c-file-style: "linux" -*-
+   2:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  vi: set shiftwidth=8 tabstop=8 noexpandtab:
+   3:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *
+   4:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  Copyright 2012 Elovalo project group
+   5:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *
+   6:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  This program is free software: you can redistribute it and/or modify
+   7:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  it under the terms of the GNU General Public License as published by
+   8:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  the Free Software Foundation, either version 3 of the License, or
+   9:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  (at your option) any later version.
+  10:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *
+  11:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  This program is distributed in the hope that it will be useful,
+  12:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  13:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  14:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  GNU General Public License for more details.
+  15:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *
+  16:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  You should have received a copy of the GNU General Public License
+  17:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  18:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+  19:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  20:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /**
+  21:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  * Device driver for HC-SR04 ultrasound module
+  22:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+  23:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  24:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <stdio.h>
+  25:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <avr/io.h>
+  26:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <avr/interrupt.h>
+  27:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <avr/pgmspace.h>
+  28:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <inttypes.h>
+  29:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include <util/atomic.h>
+  30:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #include "hcsr04.h"
+  31:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  32:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** //values for state
+  33:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define ST_IDLE 0
+  34:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define ST_SENDING_START_PULSE 1
+  35:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define ST_WAITING_RESPONSE_PULSE 2
+  36:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define ST_MEASURING_RESPONSE_PULSE 3
+  37:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define ST_WAITING_ECHO_FADING_AWAY 4
+  38:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  39:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** volatile uint8_t state = ST_IDLE;
+  40:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  41:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** //values for oper_mode
+  42:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define SINGLE_SHOT 0
+  43:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** #define CONTINUOUS 1
+  44:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  45:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** volatile uint8_t oper_mode = SINGLE_SHOT;
+  46:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  47:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** //the result of the latest measurement
+  48:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** volatile uint16_t resp_pulse_length;
+  49:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  50:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** int send_pulse(void);
+  51:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  52:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /**
+  53:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  * Initialize the timer for a new measurement cycle
+  54:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+  55:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** void timer_init(void)
+  56:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 115               	.LM0:
+ 116               	.LFBB1:
+ 117               	/* prologue: function */
+ 118               	/* frame size = 0 */
+ 119               	/* stack size = 0 */
+ 120               	.L__stack_usage = 0
+  57:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //TCCR1A &= ~(1<<WGM11 | 1<<WGM10); //no need to do this, bits are cleared by default
+  58:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //TCCR1B &= ~(1<<WGM13 | 1<<WGM12); //no need to do this, bits are cleared by default
+  59:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     TCCR1B |= (1 << WGM12);	// sets compare and reset to "top" mode
+ 122               	.LM1:
+ 123 0000 E1E8      		ldi r30,lo8(-127)
+ 124 0002 F0E0      		ldi r31,0
+ 125 0004 8081      		ld r24,Z
+ 126 0006 8860      		ori r24,lo8(8)
+ 127 0008 8083      		st Z,r24
+  60:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     TCCR1B |= (1 << CS10);	// set clock divider to 1
+ 129               	.LM2:
+ 130 000a 8081      		ld r24,Z
+ 131 000c 8160      		ori r24,lo8(1)
+ 132 000e 8083      		st Z,r24
+  61:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+  62:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     OCR1A = 160;		// set "top" for 10 us (16 MHz sysclock in use)
+ 134               	.LM3:
+ 135 0010 80EA      		ldi r24,lo8(-96)
+ 136 0012 90E0      		ldi r25,0
+ 137 0014 9093 8900 		sts 136+1,r25
+ 138 0018 8093 8800 		sts 136,r24
+  63:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     // TODO: the actual pulse length is 10 ms! Why?
+  64:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     TCNT1 = 0;
+ 140               	.LM4:
+ 141 001c 1092 8500 		sts 132+1,__zero_reg__
+ 142 0020 1092 8400 		sts 132,__zero_reg__
+  65:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     TIFR1 |= (1 << OCF1A);	// clear possible pending int
+ 144               	.LM5:
+ 145 0024 B19A      		sbi 0x16,1
+  66:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     TIMSK1 |= (1 << OCIE1A);	// enable int
+ 147               	.LM6:
+ 148 0026 EFE6      		ldi r30,lo8(111)
+ 149 0028 F0E0      		ldi r31,0
+ 150 002a 8081      		ld r24,Z
+ 151 002c 8260      		ori r24,lo8(2)
+ 152 002e 8083      		st Z,r24
+ 153 0030 0895      		ret
+ 155               	.Lscope1:
+ 157               	.global	pin_init
+ 159               	pin_init:
+  67:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+  68:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+  69:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /**
+  70:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  * This int handler is called twice during measurement cycle
+  71:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  - when it is time to generate the trailing edge of the start pulse
+  72:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  - when the measurement cycle ends
+  73:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+  74:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** ISR(TIMER1_COMPA_vect)
+  75:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+  76:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+  77:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (state == ST_SENDING_START_PULSE) {
+  78:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+  79:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         PORTC &= ~(1 << PC5);	// force trailing edge of the pulse
+  80:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+  81:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //re-init TIMER1 for measuring response pulse length
+  82:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCCR1B &= ~(1 << CS12 | 1 << CS11 | 1 << CS10);	// stop timer
+  83:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         OCR1A = 6000;	// set "top" for 96 ms (16 MHz sysclock in use)
+  84:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCNT1 = 0;
+  85:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCCR1B |= (1 << CS12);	// start timer, set clock divider to 256
+  86:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+  87:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         state = ST_WAITING_RESPONSE_PULSE;
+  88:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     } else {
+  89:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //normally the state should be ST_WAITING_ECHO_FADING_AWAY here
+  90:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //but clear state machine also in all other cases
+  91:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+  92:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (state == ST_MEASURING_RESPONSE_PULSE) {
+  93:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             // This situation happens when there is no
+  94:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             // object in the beam area
+  95:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             resp_pulse_length = HCSR04_MEAS_FAIL;
+  96:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         }
+  97:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+  98:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TIMSK1 &= ~(1 << OCIE1A);	// disable timer int
+  99:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         PCICR &= ~(1 << PCIE1);	// disable PIN Change int
+ 100:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         state = ST_IDLE;
+ 101:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         
+ 102:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (oper_mode == CONTINUOUS)
+ 103:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             send_pulse();
+ 104:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     }
+ 105:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 106:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 107:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /**
+ 108:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  * Initialize the I/O pins for a new measurement cycle
+ 109:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+ 110:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** void pin_init(void)
+ 111:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 161               	.LM7:
+ 162               	.LFBB2:
+ 163               	/* prologue: function */
+ 164               	/* frame size = 0 */
+ 165               	/* stack size = 0 */
+ 166               	.L__stack_usage = 0
+ 112:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     DDRC |= (1 << PC5);	//output
+ 168               	.LM8:
+ 169 0032 3D9A      		sbi 0x7,5
+ 113:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     DDRC &= ~(1 << PC4);	//input
+ 171               	.LM9:
+ 172 0034 3C98      		cbi 0x7,4
+ 114:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 115:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //Enable PIN Change Interrupt 1 - This enables interrupts on pins
+ 116:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //PCINT14...8, see doc8161.pdf Rev. 8161D – 10/09, ch 12
+ 117:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     PCICR |= (1 << PCIE1);
+ 174               	.LM10:
+ 175 0036 E8E6      		ldi r30,lo8(104)
+ 176 0038 F0E0      		ldi r31,0
+ 177 003a 8081      		ld r24,Z
+ 178 003c 8260      		ori r24,lo8(2)
+ 179 003e 8083      		st Z,r24
+ 118:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 119:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //Set the mask on Pin change interrupt 1 so that only PCINT12 (PC4) triggers
+ 120:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //the interrupt. see doc8161.pdf Rev. 8161D – 10/09, ch 12.2.1
+ 121:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     PCMSK1 |= (1 << PCINT12);
+ 181               	.LM11:
+ 182 0040 ECE6      		ldi r30,lo8(108)
+ 183 0042 F0E0      		ldi r31,0
+ 184 0044 8081      		ld r24,Z
+ 185 0046 8061      		ori r24,lo8(16)
+ 186 0048 8083      		st Z,r24
+ 187 004a 0895      		ret
+ 189               	.Lscope2:
+ 191               	.global	__vector_10
+ 193               	__vector_10:
+ 122:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return;
+ 123:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 124:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 125:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** /**
+ 126:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  * This int handler is called twice during measurement cycle
+ 127:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  - when it is time to generate the trailing edge of the start pulse
+ 128:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  *  - when the measurement cycle ends
+ 129:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****  */
+ 130:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** ISR(PCINT1_vect)
+ 131:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 195               	.LM12:
+ 196               	.LFBB3:
+ 197 004c 1F92      		push r1
+ 198 004e 0F92      		push r0
+ 199 0050 0FB6      		in r0,__SREG__
+ 200 0052 0F92      		push r0
+ 201 0054 1124      		clr __zero_reg__
+ 202 0056 8F93      		push r24
+ 203 0058 9F93      		push r25
+ 204               	/* prologue: Signal */
+ 205               	/* frame size = 0 */
+ 206               	/* stack size = 5 */
+ 207               	.L__stack_usage = 5
+ 132:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 133:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     register uint8_t leading_edge = PINC & (1 << PINC4);
+ 209               	.LM13:
+ 210 005a 86B1      		in r24,0x6
+ 211 005c 8071      		andi r24,lo8(16)
+ 134:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (state == ST_WAITING_RESPONSE_PULSE) {
+ 213               	.LM14:
+ 214 005e 9091 0000 		lds r25,state
+ 215 0062 9230      		cpi r25,lo8(2)
+ 216 0064 01F4      		brne .L4
+ 135:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (leading_edge) {
+ 218               	.LM15:
+ 219 0066 8823      		tst r24
+ 220 0068 01F0      		breq .L3
+ 136:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             TCNT1 = 0; //restart counting
+ 222               	.LM16:
+ 223 006a 1092 8500 		sts 132+1,__zero_reg__
+ 224 006e 1092 8400 		sts 132,__zero_reg__
+ 137:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             state = ST_MEASURING_RESPONSE_PULSE;
+ 226               	.LM17:
+ 227 0072 83E0      		ldi r24,lo8(3)
+ 228 0074 00C0      		rjmp .L9
+ 229               	.L4:
+ 138:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         }
+ 139:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //else{
+ 140:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //trailing edge, just fall through
+ 141:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //}
+ 142:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     } else if (state == ST_MEASURING_RESPONSE_PULSE) {
+ 231               	.LM18:
+ 232 0076 9091 0000 		lds r25,state
+ 233 007a 9330      		cpi r25,lo8(3)
+ 234 007c 01F4      		brne .L3
+ 143:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (!leading_edge) {
+ 236               	.LM19:
+ 237 007e 8111      		cpse r24,__zero_reg__
+ 238 0080 00C0      		rjmp .L3
+ 144:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             resp_pulse_length = TCNT1;
+ 240               	.LM20:
+ 241 0082 8091 8400 		lds r24,132
+ 242 0086 9091 8500 		lds r25,132+1
+ 243 008a 9093 0000 		sts resp_pulse_length+1,r25
+ 244 008e 8093 0000 		sts resp_pulse_length,r24
+ 145:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             PCICR &= ~(1 << PCIE1);	//Disable PIN Change Interrupt 1
+ 246               	.LM21:
+ 247 0092 8091 6800 		lds r24,104
+ 248 0096 8D7F      		andi r24,lo8(-3)
+ 249 0098 8093 6800 		sts 104,r24
+ 146:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             state = ST_WAITING_ECHO_FADING_AWAY;
+ 251               	.LM22:
+ 252 009c 84E0      		ldi r24,lo8(4)
+ 253               	.L9:
+ 254 009e 8093 0000 		sts state,r24
+ 255               	.L3:
+ 256               	/* epilogue start */
+ 147:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         }
+ 148:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //else{
+ 149:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //leading edge, just fall through
+ 150:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         //}
+ 151:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     }
+ 152:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //else{
+ 153:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //should not happen
+ 154:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     //}
+ 155:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 258               	.LM23:
+ 259 00a2 9F91      		pop r25
+ 260 00a4 8F91      		pop r24
+ 261 00a6 0F90      		pop r0
+ 262 00a8 0FBE      		out __SREG__,r0
+ 263 00aa 0F90      		pop r0
+ 264 00ac 1F90      		pop r1
+ 265 00ae 1895      		reti
+ 270               	.Lscope3:
+ 272               	.global	send_pulse
+ 274               	send_pulse:
+ 156:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 157:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** int send_pulse(void)
+ 158:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 276               	.LM24:
+ 277               	.LFBB4:
+ 278               	/* prologue: function */
+ 279               	/* frame size = 0 */
+ 280               	/* stack size = 0 */
+ 281               	.L__stack_usage = 0
+ 159:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (state != ST_IDLE)
+ 283               	.LM25:
+ 284 00b0 8091 0000 		lds r24,state
+ 285 00b4 8111      		cpse r24,__zero_reg__
+ 286 00b6 00C0      		rjmp .L13
+ 287               	.LBB14:
+ 288               	.LBB15:
+ 160:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         return 0;
+ 161:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 162:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     pin_init();
+ 290               	.LM26:
+ 291 00b8 0E94 0000 		call pin_init
+ 163:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     PORTC |= (1 << PC5);	// the leading edge of the pulse
+ 293               	.LM27:
+ 294 00bc 459A      		sbi 0x8,5
+ 164:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     timer_init();
+ 296               	.LM28:
+ 297 00be 0E94 0000 		call timer_init
+ 165:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 166:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     state = ST_SENDING_START_PULSE;
+ 299               	.LM29:
+ 300 00c2 81E0      		ldi r24,lo8(1)
+ 301 00c4 8093 0000 		sts state,r24
+ 302 00c8 81E0      		ldi r24,lo8(1)
+ 303 00ca 90E0      		ldi r25,0
+ 304 00cc 0895      		ret
+ 305               	.L13:
+ 306               	.LBE15:
+ 307               	.LBE14:
+ 160:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         return 0;
+ 309               	.LM30:
+ 310 00ce 80E0      		ldi r24,0
+ 311 00d0 90E0      		ldi r25,0
+ 167:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 168:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return 1;
+ 169:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 313               	.LM31:
+ 314 00d2 0895      		ret
+ 316               	.Lscope4:
+ 318               	.global	__vector_17
+ 320               	__vector_17:
+  75:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 322               	.LM32:
+ 323               	.LFBB5:
+ 324 00d4 1F92      		push r1
+ 325 00d6 0F92      		push r0
+ 326 00d8 0FB6      		in r0,__SREG__
+ 327 00da 0F92      		push r0
+ 328 00dc 1124      		clr __zero_reg__
+ 329 00de 0BB6      		in r0,__RAMPZ__
+ 330 00e0 0F92      		push r0
+ 331 00e2 2F93      		push r18
+ 332 00e4 3F93      		push r19
+ 333 00e6 4F93      		push r20
+ 334 00e8 5F93      		push r21
+ 335 00ea 6F93      		push r22
+ 336 00ec 7F93      		push r23
+ 337 00ee 8F93      		push r24
+ 338 00f0 9F93      		push r25
+ 339 00f2 AF93      		push r26
+ 340 00f4 BF93      		push r27
+ 341 00f6 EF93      		push r30
+ 342 00f8 FF93      		push r31
+ 343               	/* prologue: Signal */
+ 344               	/* frame size = 0 */
+ 345               	/* stack size = 16 */
+ 346               	.L__stack_usage = 16
+  77:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (state == ST_SENDING_START_PULSE) {
+ 348               	.LM33:
+ 349 00fa 8091 0000 		lds r24,state
+ 350 00fe 8130      		cpi r24,lo8(1)
+ 351 0100 01F4      		brne .L15
+  79:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         PORTC &= ~(1 << PC5);	// force trailing edge of the pulse
+ 353               	.LM34:
+ 354 0102 4598      		cbi 0x8,5
+  82:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCCR1B &= ~(1 << CS12 | 1 << CS11 | 1 << CS10);	// stop timer
+ 356               	.LM35:
+ 357 0104 8091 8100 		lds r24,129
+ 358 0108 887F      		andi r24,lo8(-8)
+ 359 010a 8093 8100 		sts 129,r24
+  83:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         OCR1A = 6000;	// set "top" for 96 ms (16 MHz sysclock in use)
+ 361               	.LM36:
+ 362 010e 80E7      		ldi r24,lo8(112)
+ 363 0110 97E1      		ldi r25,lo8(23)
+ 364 0112 9093 8900 		sts 136+1,r25
+ 365 0116 8093 8800 		sts 136,r24
+  84:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCNT1 = 0;
+ 367               	.LM37:
+ 368 011a 1092 8500 		sts 132+1,__zero_reg__
+ 369 011e 1092 8400 		sts 132,__zero_reg__
+  85:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TCCR1B |= (1 << CS12);	// start timer, set clock divider to 256
+ 371               	.LM38:
+ 372 0122 8091 8100 		lds r24,129
+ 373 0126 8460      		ori r24,lo8(4)
+ 374 0128 8093 8100 		sts 129,r24
+  87:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         state = ST_WAITING_RESPONSE_PULSE;
+ 376               	.LM39:
+ 377 012c 82E0      		ldi r24,lo8(2)
+ 378 012e 8093 0000 		sts state,r24
+ 379 0132 00C0      		rjmp .L14
+ 380               	.L15:
+  92:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (state == ST_MEASURING_RESPONSE_PULSE) {
+ 382               	.LM40:
+ 383 0134 8091 0000 		lds r24,state
+ 384 0138 8330      		cpi r24,lo8(3)
+ 385 013a 01F4      		brne .L17
+  95:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             resp_pulse_length = HCSR04_MEAS_FAIL;
+ 387               	.LM41:
+ 388 013c 8FEF      		ldi r24,lo8(-1)
+ 389 013e 9FEF      		ldi r25,lo8(-1)
+ 390 0140 9093 0000 		sts resp_pulse_length+1,r25
+ 391 0144 8093 0000 		sts resp_pulse_length,r24
+ 392               	.L17:
+  98:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         TIMSK1 &= ~(1 << OCIE1A);	// disable timer int
+ 394               	.LM42:
+ 395 0148 8091 6F00 		lds r24,111
+ 396 014c 8D7F      		andi r24,lo8(-3)
+ 397 014e 8093 6F00 		sts 111,r24
+  99:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         PCICR &= ~(1 << PCIE1);	// disable PIN Change int
+ 399               	.LM43:
+ 400 0152 8091 6800 		lds r24,104
+ 401 0156 8D7F      		andi r24,lo8(-3)
+ 402 0158 8093 6800 		sts 104,r24
+ 100:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         state = ST_IDLE;
+ 404               	.LM44:
+ 405 015c 1092 0000 		sts state,__zero_reg__
+ 102:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         if (oper_mode == CONTINUOUS)
+ 407               	.LM45:
+ 408 0160 8091 0000 		lds r24,oper_mode
+ 409 0164 8130      		cpi r24,lo8(1)
+ 410 0166 01F4      		brne .L14
+ 103:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****             send_pulse();
+ 412               	.LM46:
+ 413 0168 0E94 0000 		call send_pulse
+ 414               	.L14:
+ 415               	/* epilogue start */
+ 105:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 417               	.LM47:
+ 418 016c FF91      		pop r31
+ 419 016e EF91      		pop r30
+ 420 0170 BF91      		pop r27
+ 421 0172 AF91      		pop r26
+ 422 0174 9F91      		pop r25
+ 423 0176 8F91      		pop r24
+ 424 0178 7F91      		pop r23
+ 425 017a 6F91      		pop r22
+ 426 017c 5F91      		pop r21
+ 427 017e 4F91      		pop r20
+ 428 0180 3F91      		pop r19
+ 429 0182 2F91      		pop r18
+ 430 0184 0F90      		pop r0
+ 431 0186 0BBE      		out __RAMPZ__,r0
+ 432 0188 0F90      		pop r0
+ 433 018a 0FBE      		out __SREG__,r0
+ 434 018c 0F90      		pop r0
+ 435 018e 1F90      		pop r1
+ 436 0190 1895      		reti
+ 438               	.Lscope5:
+ 440               	.global	hcsr04_send_pulse
+ 442               	hcsr04_send_pulse:
+ 170:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 171:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** int hcsr04_send_pulse(void)
+ 172:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 444               	.LM48:
+ 445               	.LFBB6:
+ 446               	/* prologue: function */
+ 447               	/* frame size = 0 */
+ 448               	/* stack size = 0 */
+ 449               	.L__stack_usage = 0
+ 173:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (oper_mode == CONTINUOUS)
+ 451               	.LM49:
+ 452 0192 8091 0000 		lds r24,oper_mode
+ 453 0196 8130      		cpi r24,lo8(1)
+ 454 0198 01F0      		breq .L19
+ 174:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         return 0;
+ 175:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 176:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return send_pulse();
+ 456               	.LM50:
+ 457 019a 0C94 0000 		jmp send_pulse
+ 458               	.L19:
+ 177:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 460               	.LM51:
+ 461 019e 80E0      		ldi r24,0
+ 462 01a0 90E0      		ldi r25,0
+ 463 01a2 0895      		ret
+ 465               	.Lscope6:
+ 467               	.global	hcsr04_start_continuous_meas
+ 469               	hcsr04_start_continuous_meas:
+ 178:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 179:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** int hcsr04_start_continuous_meas(void)
+ 180:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 471               	.LM52:
+ 472               	.LFBB7:
+ 473               	/* prologue: function */
+ 474               	/* frame size = 0 */
+ 475               	/* stack size = 0 */
+ 476               	.L__stack_usage = 0
+ 181:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     int ret_val = send_pulse();
+ 478               	.LM53:
+ 479 01a4 0E94 0000 		call send_pulse
+ 182:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 183:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (ret_val)
+ 481               	.LM54:
+ 482 01a8 0097      		sbiw r24,0
+ 483 01aa 01F0      		breq .L21
+ 184:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         oper_mode = CONTINUOUS;
+ 485               	.LM55:
+ 486 01ac 21E0      		ldi r18,lo8(1)
+ 487 01ae 2093 0000 		sts oper_mode,r18
+ 488               	.L21:
+ 185:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 186:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return ret_val;
+ 187:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 490               	.LM56:
+ 491 01b2 0895      		ret
+ 496               	.Lscope7:
+ 498               	.global	hcsr04_stop_continuous_meas
+ 500               	hcsr04_stop_continuous_meas:
+ 188:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 189:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** void hcsr04_stop_continuous_meas(void)
+ 190:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 502               	.LM57:
+ 503               	.LFBB8:
+ 504               	/* prologue: function */
+ 505               	/* frame size = 0 */
+ 506               	/* stack size = 0 */
+ 507               	.L__stack_usage = 0
+ 191:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     oper_mode = SINGLE_SHOT;
+ 509               	.LM58:
+ 510 01b4 1092 0000 		sts oper_mode,__zero_reg__
+ 511 01b8 0895      		ret
+ 513               	.Lscope8:
+ 515               	.global	hcsr04_get_pulse_length
+ 517               	hcsr04_get_pulse_length:
+ 192:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 193:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 194:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** uint16_t hcsr04_get_pulse_length(void)
+ 195:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 519               	.LM59:
+ 520               	.LFBB9:
+ 521               	/* prologue: function */
+ 522               	/* frame size = 0 */
+ 523               	/* stack size = 0 */
+ 524               	.L__stack_usage = 0
+ 525               	.LBB16:
+ 526               	.LBB17:
+ 527               	.LBB18:
+ 529               	.Ltext1:
+   1:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** /* Copyright (c) 2007 Dean Camera
+   2:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    All rights reserved.
+   3:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+   4:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    Redistribution and use in source and binary forms, with or without
+   5:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    modification, are permitted provided that the following conditions are met:
+   6:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+   7:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    * Redistributions of source code must retain the above copyright
+   8:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer.
+   9:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  10:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    * Redistributions in binary form must reproduce the above copyright
+  11:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      notice, this list of conditions and the following disclaimer in
+  12:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      the documentation and/or other materials provided with the
+  13:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      distribution.
+  14:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  15:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****    * Neither the name of the copyright holders nor the names of
+  16:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      contributors may be used to endorse or promote products derived
+  17:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****      from this software without specific prior written permission.
+  18:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  19:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  20:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  21:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  22:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  23:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  24:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  25:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  26:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  27:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  28:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  29:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****   POSSIBILITY OF SUCH DAMAGE.
+  30:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** */
+  31:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  32:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** /* $Id$ */
+  33:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  34:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** #ifndef _UTIL_ATOMIC_H_
+  35:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** #define _UTIL_ATOMIC_H_ 1
+  36:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  37:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** #include <avr/io.h>
+  38:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** #include <avr/interrupt.h>
+  39:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  40:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** #if !defined(__DOXYGEN__)
+  41:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** /* Internal helper functions. */
+  42:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** static __inline__ uint8_t __iSeiRetVal(void)
+  43:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** {
+  44:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     sei();
+  45:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     return 1;
+  46:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** }
+  47:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  48:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** static __inline__ uint8_t __iCliRetVal(void)
+  49:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** {
+  50:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     cli();
+ 531               	.LM60:
+ 532               	/* #APP */
+ 533               	 ;  50 "/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h" 1
+ 534 01ba F894      		cli
+ 535               	 ;  0 "" 2
+ 536               	/* #NOAPP */
+ 537               	.LBE18:
+ 538               	.LBE17:
+ 540               	.Ltext2:
+ 196:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     uint16_t ret_val;
+ 197:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     ATOMIC_BLOCK(ATOMIC_FORCEON) {
+ 198:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         ret_val = resp_pulse_length;
+ 542               	.LM61:
+ 543 01bc 8091 0000 		lds r24,resp_pulse_length
+ 544 01c0 9091 0000 		lds r25,resp_pulse_length+1
+ 545               	.LBB19:
+ 546               	.LBB20:
+ 548               	.Ltext3:
+  51:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     return 1;
+  52:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** }
+  53:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** 
+  54:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** static __inline__ void __iSeiParam(const uint8_t *__s)
+  55:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h **** {
+  56:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     sei();
+ 550               	.LM62:
+ 551               	/* #APP */
+ 552               	 ;  56 "/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h" 1
+ 553 01c4 7894      		sei
+ 554               	 ;  0 "" 2
+  57:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     __asm__ volatile ("" ::: "memory");
+ 556               	.LM63:
+ 557               	/* #NOAPP */
+ 558               	.LBE20:
+ 559               	.LBE19:
+ 560               	.LBE16:
+ 562               	.Ltext4:
+ 199:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     }
+ 200:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return ret_val;
+ 201:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }
+ 564               	.LM64:
+ 565 01c6 0895      		ret
+ 570               	.Lscope9:
+ 572               	.global	hcsr04_get_distance_in_cm
+ 574               	hcsr04_get_distance_in_cm:
+ 202:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** 
+ 203:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** uint16_t hcsr04_get_distance_in_cm(void)
+ 204:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** {
+ 576               	.LM65:
+ 577               	.LFBB10:
+ 578               	/* prologue: function */
+ 579               	/* frame size = 0 */
+ 580               	/* stack size = 0 */
+ 581               	.L__stack_usage = 0
+ 582               	.LBB21:
+ 583               	.LBB22:
+ 584               	.LBB23:
+ 586               	.Ltext5:
+  50:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     cli();
+ 588               	.LM66:
+ 589               	/* #APP */
+ 590               	 ;  50 "/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h" 1
+ 591 01c8 F894      		cli
+ 592               	 ;  0 "" 2
+ 593               	/* #NOAPP */
+ 594               	.LBE23:
+ 595               	.LBE22:
+ 597               	.Ltext6:
+ 205:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     uint16_t tmp_pulse_length;
+ 206:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     ATOMIC_BLOCK(ATOMIC_FORCEON) {
+ 207:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         tmp_pulse_length = resp_pulse_length;
+ 599               	.LM67:
+ 600 01ca 2091 0000 		lds r18,resp_pulse_length
+ 601 01ce 3091 0000 		lds r19,resp_pulse_length+1
+ 602               	.LBB24:
+ 603               	.LBB25:
+ 605               	.Ltext7:
+  56:/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h ****     sei();
+ 607               	.LM68:
+ 608               	/* #APP */
+ 609               	 ;  56 "/usr/local/CrossPack-AVR-20131216/avr/include/util/atomic.h" 1
+ 610 01d2 7894      		sei
+ 611               	 ;  0 "" 2
+ 613               	.LM69:
+ 614               	/* #NOAPP */
+ 615               	.LBE25:
+ 616               	.LBE24:
+ 617               	.LBE21:
+ 619               	.Ltext8:
+ 208:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     }
+ 209:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     if (tmp_pulse_length == HCSR04_MEAS_FAIL)
+ 621               	.LM70:
+ 622 01d4 2F3F      		cpi r18,-1
+ 623 01d6 8FEF      		ldi r24,-1
+ 624 01d8 3807      		cpc r19,r24
+ 625 01da 01F0      		breq .L29
+ 210:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****         return tmp_pulse_length;
+ 211:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     
+ 212:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     // 36 pulses per 10 cm, when clock divider is 256 in TCCR1B
+ 213:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c ****     return (10 * tmp_pulse_length) / 36;
+ 627               	.LM71:
+ 628 01dc 4AE0      		ldi r20,lo8(10)
+ 629 01de 429F      		mul r20,r18
+ 630 01e0 C001      		movw r24,r0
+ 631 01e2 439F      		mul r20,r19
+ 632 01e4 900D      		add r25,r0
+ 633 01e6 1124      		clr __zero_reg__
+ 634 01e8 64E2      		ldi r22,lo8(36)
+ 635 01ea 70E0      		ldi r23,0
+ 636 01ec 0E94 0000 		call __udivmodhi4
+ 637 01f0 CB01      		movw r24,r22
+ 638 01f2 0895      		ret
+ 639               	.L29:
+ 640 01f4 8FEF      		ldi r24,lo8(-1)
+ 641 01f6 9FEF      		ldi r25,lo8(-1)
+ 214:/Users/marklee/Documents/Xcode_development/avr/DTU/Robot_test/Robot_test/hcsr04.c **** }...
+ 643               	.LM72:
+ 644 01f8 0895      		ret
+ 649               	.Lscope10:
+ 650               		.comm	resp_pulse_length,2,1
+ 651               	.global	oper_mode
+ 652               		.section .bss
+ 655               	oper_mode:
+ 656 0000 00        		.zero	1
+ 657               	.global	state
+ 660               	state:
+ 661 0001 00        		.zero	1
+ 665               		.text
+ 667               	.Letext0:
+ 668               		.ident	"GCC: (GNU) 4.8.1"
+ 669               	.global __do_clear_bss
+DEFINED SYMBOLS
+                            *ABS*:00000000 hcsr04.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:113    .text:00000000 timer_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:159    .text:00000032 pin_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:193    .text:0000004c __vector_10
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:660    .bss:00000001 state
+                            *COM*:00000002 resp_pulse_length
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:274    .text:000000b0 send_pulse
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:320    .text:000000d4 __vector_17
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:655    .bss:00000000 oper_mode
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:442    .text:00000192 hcsr04_send_pulse
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:469    .text:000001a4 hcsr04_start_continuous_meas
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:500    .text:000001b4 hcsr04_stop_continuous_meas
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:517    .text:000001ba hcsr04_get_pulse_length
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//ccTV3JJ7.s:574    .text:000001c8 hcsr04_get_distance_in_cm
+
+UNDEFINED SYMBOLS
+__udivmodhi4
+__do_clear_bss

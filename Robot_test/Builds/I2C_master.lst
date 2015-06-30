@@ -1,0 +1,254 @@
+   1               		.file	"I2C_master.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   9               		.text
+  10               	.Ltext0:
+ 103               	.global	I2C_init
+ 105               	I2C_init:
+   1:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #ifndef  F_CPU
+   2:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #define F_CPU 16000000UL
+   3:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #endif
+   4:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+   5:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #include <avr/io.h>
+   6:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #include <util/twi.h>
+   7:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+   8:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #include "I2C_master.h"
+   9:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  10:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #define F_SCL 100000UL // SCL frequency
+  11:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #define Prescaler 1
+  12:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** #define TWBR_val ((((F_CPU / F_SCL) / Prescaler) - 16 ) / 2)
+  13:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  14:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** void I2C_init(void){
+ 107               	.LM0:
+ 108               	.LFBB1:
+ 109               	/* prologue: function */
+ 110               	/* frame size = 0 */
+ 111               	/* stack size = 0 */
+ 112               	.L__stack_usage = 0
+  15:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWBR = TWBR_val;
+ 114               	.LM1:
+ 115 0000 88E4      		ldi r24,lo8(72)
+ 116 0002 8093 B800 		sts 184,r24
+ 117 0006 0895      		ret
+ 119               	.Lscope1:
+ 122               	.global	I2C_start
+ 124               	I2C_start:
+  16:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** }
+  17:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  18:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** uint8_t I2C_start(uint8_t address){
+ 126               	.LM2:
+ 127               	.LFBB2:
+ 128               	/* prologue: function */
+ 129               	/* frame size = 0 */
+ 130               	/* stack size = 0 */
+ 131               	.L__stack_usage = 0
+  19:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// reset TWI control register
+  20:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = 0;
+ 133               	.LM3:
+ 134 0008 1092 BC00 		sts 188,__zero_reg__
+  21:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// transmit START condition 
+  22:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWSTA) | (1<<TWEN);
+ 136               	.LM4:
+ 137 000c 94EA      		ldi r25,lo8(-92)
+ 138 000e 9093 BC00 		sts 188,r25
+ 139               	.L4:
+  23:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// wait for end of transmission
+  24:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	while( !(TWCR & (1<<TWINT)) );
+ 141               	.LM5:
+ 142 0012 9091 BC00 		lds r25,188
+ 143 0016 97FF      		sbrs r25,7
+ 144 0018 00C0      		rjmp .L4
+  25:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  26:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// check if the start condition was successfully transmitted
+  27:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	if((TWSR & 0xF8) != TW_START){ return 1; }
+ 146               	.LM6:
+ 147 001a 9091 B900 		lds r25,185
+ 148 001e 987F      		andi r25,lo8(-8)
+ 149 0020 9830      		cpi r25,lo8(8)
+ 150 0022 01F0      		breq .L5
+ 151               	.L9:
+ 152 0024 81E0      		ldi r24,lo8(1)
+ 153 0026 0895      		ret
+ 154               	.L5:
+  28:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  29:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// load slave address into data register
+  30:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWDR = address;
+ 156               	.LM7:
+ 157 0028 8093 BB00 		sts 187,r24
+  31:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// start transmission of address
+  32:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWEN);
+ 159               	.LM8:
+ 160 002c 84E8      		ldi r24,lo8(-124)
+ 161 002e 8093 BC00 		sts 188,r24
+ 162               	.L8:
+  33:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// wait for end of transmission
+  34:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	while( !(TWCR & (1<<TWINT)) );
+ 164               	.LM9:
+ 165 0032 8091 BC00 		lds r24,188
+ 166 0036 87FF      		sbrs r24,7
+ 167 0038 00C0      		rjmp .L8
+  35:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  36:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// check if the device has acknowledged the READ / WRITE mode
+  37:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	uint8_t twst = TW_STATUS & 0xF8;
+ 169               	.LM10:
+ 170 003a 8091 B900 		lds r24,185
+ 171 003e 887F      		andi r24,lo8(-8)
+  38:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	if ( (twst != TW_MT_SLA_ACK) && (twst != TW_MR_SLA_ACK) ) return 1;
+ 173               	.LM11:
+ 174 0040 8831      		cpi r24,lo8(24)
+ 175 0042 01F0      		breq .L10
+ 177               	.LM12:
+ 178 0044 8034      		cpi r24,lo8(64)
+ 179 0046 01F4      		brne .L9
+ 180               	.L10:
+  39:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  40:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	return 0;
+ 182               	.LM13:
+ 183 0048 80E0      		ldi r24,0
+  41:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** }
+ 185               	.LM14:
+ 186 004a 0895      		ret
+ 191               	.Lscope2:
+ 194               	.global	I2C_write
+ 196               	I2C_write:
+  42:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  43:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** uint8_t I2C_write(uint8_t data){
+ 198               	.LM15:
+ 199               	.LFBB3:
+ 200               	/* prologue: function */
+ 201               	/* frame size = 0 */
+ 202               	/* stack size = 0 */
+ 203               	.L__stack_usage = 0
+  44:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// load data into data register
+  45:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWDR = data;
+ 205               	.LM16:
+ 206 004c 8093 BB00 		sts 187,r24
+  46:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// start transmission of data
+  47:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWEN);
+ 208               	.LM17:
+ 209 0050 84E8      		ldi r24,lo8(-124)
+ 210 0052 8093 BC00 		sts 188,r24
+ 211               	.L14:
+  48:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// wait for end of transmission
+  49:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	while( !(TWCR & (1<<TWINT)) );
+ 213               	.LM18:
+ 214 0056 8091 BC00 		lds r24,188
+ 215 005a 87FF      		sbrs r24,7
+ 216 005c 00C0      		rjmp .L14
+  50:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  51:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	if( (TWSR & 0xF8) != TW_MT_DATA_ACK ){ return 1; }
+ 218               	.LM19:
+ 219 005e 9091 B900 		lds r25,185
+ 220 0062 987F      		andi r25,lo8(-8)
+ 221 0064 81E0      		ldi r24,lo8(1)
+ 222 0066 9832      		cpi r25,lo8(40)
+ 223 0068 01F4      		brne .L15
+ 224 006a 80E0      		ldi r24,0
+ 225               	.L15:
+  52:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  53:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	return 0;
+  54:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** }
+ 227               	.LM20:
+ 228 006c 0895      		ret
+ 230               	.Lscope3:
+ 232               	.global	I2C_read_ack
+ 234               	I2C_read_ack:
+  55:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  56:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** uint8_t I2C_read_ack(void){
+ 236               	.LM21:
+ 237               	.LFBB4:
+ 238               	/* prologue: function */
+ 239               	/* frame size = 0 */
+ 240               	/* stack size = 0 */
+ 241               	.L__stack_usage = 0
+  57:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  58:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// start TWI module and acknowledge data after reception
+  59:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWEA); 
+ 243               	.LM22:
+ 244 006e 84EC      		ldi r24,lo8(-60)
+ 245 0070 8093 BC00 		sts 188,r24
+ 246               	.L18:
+  60:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// wait for end of transmission
+  61:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	while( !(TWCR & (1<<TWINT)) );
+ 248               	.LM23:
+ 249 0074 8091 BC00 		lds r24,188
+ 250 0078 87FF      		sbrs r24,7
+ 251 007a 00C0      		rjmp .L18
+  62:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// return received data from TWDR
+  63:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	return TWDR;
+ 253               	.LM24:
+ 254 007c 8091 BB00 		lds r24,187
+  64:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** }
+ 256               	.LM25:
+ 257 0080 0895      		ret
+ 259               	.Lscope4:
+ 261               	.global	I2C_read_nack
+ 263               	I2C_read_nack:
+  65:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  66:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** uint8_t I2C_read_nack(void){
+ 265               	.LM26:
+ 266               	.LFBB5:
+ 267               	/* prologue: function */
+ 268               	/* frame size = 0 */
+ 269               	/* stack size = 0 */
+ 270               	.L__stack_usage = 0
+  67:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	
+  68:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// start receiving without acknowledging reception
+  69:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWEN);
+ 272               	.LM27:
+ 273 0082 84E8      		ldi r24,lo8(-124)
+ 274 0084 8093 BC00 		sts 188,r24
+ 275               	.L21:
+  70:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// wait for end of transmission
+  71:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	while( !(TWCR & (1<<TWINT)) );
+ 277               	.LM28:
+ 278 0088 8091 BC00 		lds r24,188
+ 279 008c 87FF      		sbrs r24,7
+ 280 008e 00C0      		rjmp .L21
+  72:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// return received data from TWDR
+  73:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	return TWDR;
+ 282               	.LM29:
+ 283 0090 8091 BB00 		lds r24,187
+  74:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** }
+ 285               	.LM30:
+ 286 0094 0895      		ret
+ 288               	.Lscope5:
+ 290               	.global	I2C_stop
+ 292               	I2C_stop:
+  75:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 
+  76:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** void I2C_stop(void){
+ 294               	.LM31:
+ 295               	.LFBB6:
+ 296               	/* prologue: function */
+ 297               	/* frame size = 0 */
+ 298               	/* stack size = 0 */
+ 299               	.L__stack_usage = 0
+  77:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	// transmit STOP condition
+  78:/Users/marklee/Documents/xcode/avr/DTU/Robot_test/Robot_test/I2C_master.c **** 	TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
+ 301               	.LM32:
+ 302 0096 84E9      		ldi r24,lo8(-108)
+ 303 0098 8093 BC00 		sts 188,r24
+ 304 009c 0895      		ret
+ 306               	.Lscope6:
+ 308               	.Letext0:
+ 309               		.ident	"GCC: (GNU) 4.8.1"
+DEFINED SYMBOLS
+                            *ABS*:00000000 I2C_master.c
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:2      *ABS*:0000003e __SP_H__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:3      *ABS*:0000003d __SP_L__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:4      *ABS*:0000003f __SREG__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:105    .text:00000000 I2C_init
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:124    .text:00000008 I2C_start
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:196    .text:0000004c I2C_write
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:234    .text:0000006e I2C_read_ack
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:263    .text:00000082 I2C_read_nack
+/var/folders/67/_mbxvj9d2zz6j3r80jfbq2kw0000gn/T//cc0sfxme.s:292    .text:00000096 I2C_stop
+
+NO UNDEFINED SYMBOLS
